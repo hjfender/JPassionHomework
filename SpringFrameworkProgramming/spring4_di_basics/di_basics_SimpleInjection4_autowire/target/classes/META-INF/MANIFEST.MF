@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Implementation-Title: di_basics_SimpleInjection4_autowire
+Implementation-Version: 0.1.0
+Built-By: hefe002
+Implementation-Vendor-Id: com.jpassion.di
+Build-Jdk: 1.8.0_92
+Created-By: Maven Integration for Eclipse
+Implementation-Vendor: Pivotal Software, Inc.
+
