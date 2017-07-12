@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link
+            href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css"
+            rel="stylesheet" type="text/css" />
+        <script
+            src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
+        <script
+            src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js"></script>
+        <script type="text/javascript">
+            $(function(){
+                $("#tabs").tabs();
+                $("#datepicker").datepicker();
+            });
+        </script>
+    </head>
+    <body>
+        <div id="tabs">
+            <ul>
+                <li><a href="#tab-1"><span>One</span></a></li>
+                <li><a href="#tab-2"><span>My Name</span></a></li>
+                <li><a href="#tab-3"><span>Three</span></a></li>
+            </ul>
+            <div id="tab-1">
+                <p>Tab One Content</p>
+            </div>
+            <div id="tab-2">
+                 Date: <input id="datepicker" type="text">
+            </div>
+            <div id="tab-3">
+                <p>Tab Three Content</p>
+            </div>
+        </div>
+    </body>
+</html>
