@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>jQuery Plugin Basics Homework</title>
+        <script type="text/javascript" src="https://code.jquery.com/jquery-latest.js"></script>
+    </head>
+    <body>
+        <p>One</p>
+        <p>Two</p>
+        <p>Three</p>
+        <p>Four</p>
+        <p>Five</p>
+        <p id="sang">Sang Shin</p>
+
+        <script type="text/javascript">
+            (function($) {
+                $.fn.myPlugin = function() {
+                        return this.each(function() {
+                            jThis =$(this);
+                            jThis.html(jThis.text().split("").reverse().join("") + " " + jThis.text().length);
+                    });
+                }
+            })(jQuery);
+
+            $("p").myPlugin();
+        </script>
+    </body>
+</html>

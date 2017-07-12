@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            p {
+               margin-left: 30%;
+               width: 100px;
+               border: 5px solid black;
+            }
+        </style>
+        <link rel="stylesheet" type="text/css" href="jquery.powertip-1.3.0/css/jquery.powertip.css" />
+        <script type="text/javascript" src="https://code.jquery.com/jquery-latest.js"></script>
+        <script type="text/javascript" src="jquery.powertip-1.3.0/jquery.powertip.js"></script>
+        <script type="text/javascript">
+            $(document).ready(function(){
+                $("p:first").powerTip({placement: 'w'});
+                $("p:last").powerTip({placement: 'ne'});
+            });
+        </script>
+    </head>
+    <body>
+        <p title="Tooltip Title">West Tooltip</p>
+        <p>Two</p>
+        <p>Three</p>
+        <p title="Second Title">Northeast Tooltip</p>
+    </body>
+</html>
