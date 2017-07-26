@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<class-diagram version="1.2.0" icons="true" always-add-relationships="false" generalizations="true" realizations="true" 
+  associations="true" dependencies="false" nesting-relationships="true" router="FAN">  
+  <class id="1" language="java" name="com.jpassion.dp.Rectangle" project="dp_creation_simple_factory1_shape_homework" 
+    file="/dp_creation_simple_factory1_shape_homework/src/main/java/com/jpassion/dp/Rectangle.java" binary="false" 
+    corner="BOTTOM_RIGHT">    
+    <position height="142" width="172" x="41" y="200"/>    
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
+      sort-features="false" accessors="true" visibility="true">      
+      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
+      <operations public="true" package="true" protected="true" private="true" static="true"/>    
+    </display>  
+  </class>  
+  <class id="2" language="java" name="com.jpassion.dp.Circle" project="dp_creation_simple_factory1_shape_homework" 
+    file="/dp_creation_simple_factory1_shape_homework/src/main/java/com/jpassion/dp/Circle.java" binary="false" 
+    corner="BOTTOM_RIGHT">    
+    <position height="124" width="137" x="253" y="200"/>    
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
+      sort-features="false" accessors="true" visibility="true">      
+      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
+      <operations public="true" package="true" protected="true" private="true" static="true"/>    
+    </display>  
+  </class>  
+  <class id="3" language="java" name="com.jpassion.dp.Shape" project="dp_creation_simple_factory1_shape_homework" 
+    file="/dp_creation_simple_factory1_shape_homework/src/main/java/com/jpassion/dp/Shape.java" binary="false" 
+    corner="BOTTOM_RIGHT">    
+    <position height="123" width="200" x="41" y="37"/>    
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
+      sort-features="false" accessors="true" visibility="true">      
+      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
+      <operations public="true" package="true" protected="true" private="true" static="true"/>    
+    </display>  
+  </class>  
+  <class id="4" language="java" name="com.jpassion.dp.Client" project="dp_creation_simple_factory1_shape_homework" 
+    file="/dp_creation_simple_factory1_shape_homework/src/main/java/com/jpassion/dp/Client.java" binary="false" 
+    corner="BOTTOM_RIGHT">    
+    <position height="106" width="130" x="490" y="37"/>    
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
+      sort-features="false" accessors="true" visibility="true">      
+      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
+      <operations public="true" package="true" protected="true" private="true" static="true"/>    
+    </display>  
+  </class>  
+  <class id="5" language="java" name="com.jpassion.dp.SimpleShapeFactory" 
+    project="dp_creation_simple_factory1_shape_homework" 
+    file="/dp_creation_simple_factory1_shape_homework/src/main/java/com/jpassion/dp/SimpleShapeFactory.java" 
+    binary="false" corner="BOTTOM_RIGHT">    
+    <position height="106" width="169" x="281" y="37"/>    
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
+      sort-features="false" accessors="true" visibility="true">      
+      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
+      <operations public="true" package="true" protected="true" private="true" static="true"/>    
+    </display>  
+  </class>  
+  <generalization id="6">    
+    <end type="SOURCE" refId="2"/>    
+    <end type="TARGET" refId="3"/>  
+  </generalization>  
+  <generalization id="7">    
+    <end type="SOURCE" refId="1"/>    
+    <end type="TARGET" refId="3"/>  
+  </generalization>  
+  <classifier-display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
+    sort-features="false" accessors="true" visibility="true">    
+    <attributes public="true" package="true" protected="true" private="true" static="true"/>    
+    <operations public="true" package="true" protected="true" private="true" static="true"/>  
+  </classifier-display>  
+  <association-display labels="true" multiplicity="true"/>
+</class-diagram>
