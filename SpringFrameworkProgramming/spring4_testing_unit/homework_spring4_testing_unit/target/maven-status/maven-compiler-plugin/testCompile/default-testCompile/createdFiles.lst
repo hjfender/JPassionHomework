@@ -1,0 +1,11 @@
+com\javapassion\examples\bank\services\AccountServiceImplEasyMockTests.class
+com\javapassion\examples\bank\dao\JdbcAccountDaoTests.class
+com\javapassion\examples\bank\domain\AccountTests.class
+com\javapassion\examples\bank\services\AccountServiceTestNGContextTests.class
+com\javapassion\examples\bank\controller\DepositControllerTests.class
+com\javapassion\examples\bank\dao\InMemoryAccountDaoTests.class
+com\javapassion\examples\bank\services\AccountServiceImplStubTests$AccountDaoStub.class
+com\javapassion\examples\bank\services\AccountServiceImplStubTests$1.class
+com\javapassion\examples\bank\services\AccountServiceImplStubTests.class
+com\javapassion\examples\bank\services\AccountServiceTests.class
+com\javapassion\examples\bank\services\AccountServiceJUnit4ContextTests.class

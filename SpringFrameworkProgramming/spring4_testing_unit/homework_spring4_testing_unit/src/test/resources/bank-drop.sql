@@ -1,0 +1,2 @@
+/* Create table for HSQLDB */
+DROP TABLE IF EXISTS ACCOUNT;

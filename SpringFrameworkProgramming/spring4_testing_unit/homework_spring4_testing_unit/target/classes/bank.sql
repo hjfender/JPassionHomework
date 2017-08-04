@@ -1,0 +1,5 @@
+/* Create table for HSQLDB */
+CREATE TABLE ACCOUNT (
+    ACCOUNT_NO    INTEGER    	NOT NULL IDENTITY,
+    BALANCE       DOUBLE        NOT NULL
+);

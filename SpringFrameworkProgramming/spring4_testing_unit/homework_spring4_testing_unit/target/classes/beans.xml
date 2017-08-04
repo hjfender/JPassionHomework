@@ -1,0 +1,60 @@
+<beans 
+    xmlns              = "http://www.springframework.org/schema/beans"
+	xmlns:xsi          = "http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:context      = "http://www.springframework.org/schema/context"
+	xmlns:p            = "http://www.springframework.org/schema/p"
+	xsi:schemaLocation = "
+	   http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
+	   http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+    "
+>
+    <!-- ========================= DATASOURCE DEFINITION ========================= -->              
+
+    <!-- Configurer that replaces ${...} placeholders with values from a properties file -->
+    <!-- (in this case, JDBC-related settings for the dataSource definition below) -->
+    <context:property-placeholder location = "classpath:jdbc.properties"/>
+
+    <bean 
+        id = "dataSource"
+        class = "org.springframework.jdbc.datasource.DriverManagerDataSource"
+        p:driverClassName   = "${jdbc.driverClassName}"
+        p:url               = "${jdbc.url}" 
+        p:username          = "${jdbc.username}" 
+        p:password          = "${jdbc.password}"
+    />
+    
+    <!-- DataSource configuration for Apache Commons DBCP. -->
+<!--     <bean  -->
+<!--         id                  = "dataSource"  -->
+<!--         class               = "org.apache.commons.dbcp.BasicDataSource" -->
+<!--         destroy-method      = "close"  -->
+<!--         p:driverClassName   = "${jdbc.driverClassName}" -->
+<!--         p:url               = "${jdbc.url}"  -->
+<!--         p:username          = "${jdbc.username}"  -->
+<!--         p:password          = "${jdbc.password}"  -->
+<!--     /> -->
+
+    <!-- ========================= TRANSACTION MANAGER DEFINITION ========================= --> 
+	<bean 
+        id = "transactionManager"
+		class = "org.springframework.jdbc.datasource.DataSourceTransactionManager"
+	>
+		<property name = "dataSource" ref = "dataSource" />
+	</bean>
+
+    <!-- ========================= DAO DEFINITION ========================= -->
+	<bean 
+        id = "accountDao" 
+        class = "com.javapassion.examples.bank.dao.JdbcAccountDao"
+    >
+		<property name = "dataSource" ref = "dataSource" />
+	</bean>
+
+    <!-- ========================= SERVICE DEFINITION ========================= -->
+	<bean 
+        id = "accountService"
+		class = "com.javapassion.examples.bank.services.AccountServiceImpl"
+	>
+		<constructor-arg ref = "accountDao" />
+	</bean>
+</beans>

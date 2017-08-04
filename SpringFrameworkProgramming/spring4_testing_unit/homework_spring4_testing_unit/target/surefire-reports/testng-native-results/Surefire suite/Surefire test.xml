@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite hostname="HCM5CG5506BLZ" name="com.javapassion.examples.bank.services.AccountServiceTestNGContextTests" tests="2" failures="0" timestamp="4 Aug 2017 19:25:42 GMT" time="0.824" errors="0">
+  <testcase name="deposit" time="0.01" classname="com.javapassion.examples.bank.services.AccountServiceTestNGContextTests"/>
+  <testcase name="withDraw" time="0.01" classname="com.javapassion.examples.bank.services.AccountServiceTestNGContextTests"/>
+</testsuite>
