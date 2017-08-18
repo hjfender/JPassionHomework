@@ -1,0 +1,15 @@
+org\springframework\integration\samples\cafe\Cafe.class
+org\springframework\integration\samples\cafe\xml\CafeDemoApp.class
+org\springframework\integration\samples\cafe\xml\CafeDemoAppUtilities.class
+org\springframework\integration\samples\cafe\xml\Waiter.class
+org\springframework\integration\samples\cafe\annotation\Barista.class
+org\springframework\integration\samples\cafe\Order.class
+org\springframework\integration\samples\cafe\xml\Barista.class
+org\springframework\integration\samples\cafe\DrinkType.class
+org\springframework\integration\samples\cafe\annotation\DrinkRouter.class
+org\springframework\integration\samples\cafe\Drink.class
+org\springframework\integration\samples\cafe\annotation\CafeDemoApp.class
+org\springframework\integration\samples\cafe\annotation\Waiter.class
+org\springframework\integration\samples\cafe\OrderItem.class
+org\springframework\integration\samples\cafe\annotation\OrderSplitter.class
+org\springframework\integration\samples\cafe\Delivery.class
