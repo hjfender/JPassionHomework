@@ -1,0 +1,3192 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+  <script src="index_files/tigris.txt" type="text/javascript"></script>
+  <link rel="stylesheet" type="text/css" href="index_files/netbeans.css">
+  <title>LAB-1615: MySQL Transactions</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <meta name="SourceCastVersion" content="2.6.2.4.10">
+  <meta name="keywords" content="NetBeans, IDE, Platform, free, open source, developer">
+  <link rel="stylesheet" href="index_files/netbeans_002.css">
+  <meta name="author" content="Sang Shin, Michèle Garoche">
+  <style type="text/css">
+#search {height:100%;}
+#topmodule {align:right;}
+  </style>
+  <script language="JavaScript" type="text/javascript">
+<!--
+function get_sc_login() {
+  var sclogin = "guest";
+  return (sclogin);
+}
+var username=get_sc_login();
+//-->
+  </script>
+</head>
+<body onload="loginfocus()" class="composite">
+<!-- begin TopTabs --><!-- end TopTabs --><!-- start NavCol --><!-- end NavCol --><!-- Servlet-Specific template --><!-- Show servlet name if it is a servlet -->
+<br>
+<div style="text-align: center;">@Copyright notice: This content is
+      meant to be used only for paying subscriber's personal
+      consumption. Sharing with others in any shape or form is strictly
+      prohibited&nbsp; unless a special licensing arrangement has been
+      made with <a href="mailto:support@jpassion.com">JPassion.com</a>.
+      <br>
+    </div>
+
+    <br>
+<h1 style="text-align: center;">MySQL Transactions<br>
+</h1>
+<div class="articledate" style="margin-left: 0px; text-align: center;"><a href="http://www.jpassion.com/SangSchedule.html#Bio">Sang
+        Shin</a>, <a href="http://www.jpassion.com">www.jpassion.com</a>,
+      <a href="http://groups.google.com/group/jpassion_mysql">class
+        forum</a><a href="http://www.jpassion.com"></a><a href="mailto:sangshinpassion@gmail.com"><i>
+</i></a></div>
+<div class="indent"><br>
+<div style="text-align: center;"><img alt="" src="index_files/sangshin2009.jpg" style="width: 88px; height: 101px;">&nbsp; <br>
+</div>
+<br>
+A transaction is a sequential group of database manipulation
+operations, which is performed as if it were one single work unit. In
+other words, a transaction will never be complete unless each
+individual operation within the group is successful. If any operation
+within the transaction fails, the entire transaction will fail.<b><br>
+</b>
+<p>Transactions have the following four standard properties, usually
+referred to by the acronym ACID:</p>
+<ul>
+  <li><b>Atomicity:</b> ensures that all operations within the work
+unit are completed successfully; otherwise, the transaction is aborted
+at the point of failure, and previous operations are rolled back to
+their former state.</li>
+  <li><b>Consistency:</b> ensures that the database properly changes
+states upon a successfully committed transaction.</li>
+  <li><b>Isolation:</b> enables transactions to operate independently
+of and transparent to each other.</li>
+  <li><b>Durability:</b> ensures that the result or effect of a
+committed transaction persists in case of a system failure.</li>
+</ul>
+<p>In MySQL, transactions begin with the statement START TRANSACTION
+and end
+with either a COMMIT or a ROLLBACK statement. The SQL commands between
+the beginning and ending statements form the bulk of the transaction.</p>
+<br>
+<div style="text-align: center;"><b>Expected duration: 120 minutes
+(excluding homework)<br>
+<br>
+</b></div>
+<br>
+<br>
+<h3 class="tutorial">Resources<br>
+</h3>
+<ul>
+  <li> <a href="http://dev.mysql.com/doc/refman/5.1/en/sql-syntax-transactions.html">Chapter
+12.3. MySQL Transactional and Locking Statements</a> from MySQL 5.1
+Reference Manual</li>
+</ul>
+<br>
+<h3 class="tutorial"><a name="Change_Log"></a>Change Log<br>
+</h3>
+<ul>
+  <li>March 15th, 2010: Created</li>
+  <li>May 11th, 2010: Added explanation to exercises and clarify
+isolation levels (Michèle Garoche)</li>
+  <li>Aug. 6th, 2010: Resource information is included as part of lab
+document (Sang Shin)</li>
+  <li>Aug. 8th, 2010: Homework is added (Sang Shin)</li>
+<li>Oct. 28th, 2012: Cosmetic changes are made (Sang Shin)<br>
+</li>
+
+</ul>
+<br>
+<h3 class="tutorial">Things to be done (by Sang Shin)<br>
+</h3>
+<ul>
+  <li>Add more explanation to the exercises</li>
+</ul>
+<br>
+&nbsp;<br>
+<h3 class="tutorial"><a name="Tutorial_Exercises"></a>Lab Exercises</h3>
+<ul>
+  <li><a href="#Exercise_1">Exercise 1: Simple transaction - Commit
+(20 minutes)</a></li>
+  <li><a href="#Exercise_2">Exercise 2: Simple transaction - Rollback
+(20 minutes)</a></li>
+  <li><a href="#Exercise_3">Exercise 3: InnoDB Storage engine (20
+minutes)</a><br>
+  </li>
+  <li><a href="#Exercise_4">Exercise 4: Savepoints (20 minutes)</a></li>
+  <li><a href="#Exercise_5">Exercise 5: Isolation levels (30 minutes)</a></li>
+  <li><a href="#Exercise_6">Exercise 6: Locks (20 minutes)</a><br>
+  </li>
+  <li><a href="#Homework_Exercise">Homework
+Exercise</a></li>
+</ul>
+</div>
+<br>
+<h2><a name="Exercise_1"></a>Exercise 1: Simple transaction - Commit<br>
+</h2>
+
+<p class="pBody" style="margin-left: 40px;">In this exercise, you are
+going to exercise how to start a&nbsp; new transaction, make changes,
+and then commit them.<br>
+</p>
+
+<div style="margin-left: 40px;">
+<ol start="0"><li><a href="#1.0">Setup</a><br>
+</li>
+  <li><a href="#1.1">Create and populate test tables</a><br>
+  </li>
+<li><a href="#1.2">Start a new transaction, and insert new records</a><br>
+  </li><li><a href="#1.3">Perform COMMIT</a></li></ol>
+<br>
+<br>
+</div>
+
+<h3 style="margin-left: 40px;" class="tutorial"><a name="1.0"></a>(1.0)&nbsp;
+Setup<br>
+</h3>
+
+<br>
+<div style="margin-left: 40px;">1. Start MySQL database server<br>
+
+
+      <br>
+
+
+      
+  <table border="1" cellpadding="2" cellspacing="2" width="100%">
+
+
+        <tbody>
+          <tr>
+            <td valign="top">C:\javatools\mysql-5.5.28-winx64\bin&gt;<b>mysqld</b><br>
+              <br>
+            </td>
+          </tr>
+        </tbody>
+      
+  </table>
+
+
+      <br>
+
+
+      2. Go to the lab directory, Start MySQL, Set default database<br>
+
+
+      <br>
+
+
+      
+  <table border="1" cellpadding="2" cellspacing="2" width="100%">
+
+
+        <tbody>
+          <tr>
+            <td valign="top">C:\handson_mysql&gt;<font color="#ff0000"><b> cd mysql_transactions</b></font><br>
+              <br>
+              C:\handson_mysql\mysql_transactions&gt;<font color="#ff0000"><b>mysql
+                  -u root -p</b></font><br>
+              Enter password:<br>
+              Welcome to the MySQL monitor.&nbsp; Commands end with ; or
+              \g.<br>
+              Your MySQL connection id is 1<br>
+              Server version: 5.5.28 MySQL Community Server (GPL)<br>
+              <br>
+              Copyright (c) 2000, 2012, Oracle and/or its affiliates.
+              All rights reserved.<br>
+              <br>
+              Oracle is a registered trademark of Oracle Corporation
+              and/or its<br>
+              affiliates. Other names may be trademarks of their
+              respective<br>
+              owners.<br>
+              <br>
+              Type 'help;' or '\h' for help. Type '\c' to clear the
+              current input statement.<br>
+              <br>
+              mysql&gt; <font color="#ff0000"><b>use mydb;</b></font><br>
+              Database changed</td>
+          </tr>
+        </tbody>
+      
+  </table>
+
+
+      <br>
+
+
+      &nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+      &nbsp;&nbsp;
+      &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+      &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+      &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+      &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+      &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+      &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+      &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; <a href="#Exercise_1">return to top of exercise</a><br>
+<br>
+</div>
+<br>
+<div style="margin-left: 40px;"><br>
+</div>
+<h3 style="margin-left: 40px;" class="tutorial"><a name="1.1"></a>(1.1)&nbsp;
+Create and populate test tables<br>
+</h3>
+<br>
+<div style="margin-left: 40px;">1. Study the <span style="font-weight: bold;">checking_saving.sql </span>file which is
+located in <span style="font-weight: bold;">&lt;LAB_UNZIPPED_DIRECTORY&gt;/mysql_transactions/sqlscripts</span>
+directory.<br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">/* Set the default (current)
+database */<br>
+USE mydb;<br>
+      <br>
+/* Drop tables */<br>
+DROP TABLE IF EXISTS checking;<br>
+DROP TABLE IF EXISTS savings;<br>
+      <br>
+/* Create and populate 'checking" table */<br>
+CREATE TABLE checking (<br>
+&nbsp;&nbsp; checking_id SMALLINT UNSIGNED NOT NULL,<br>
+&nbsp;&nbsp; name VARCHAR(45) NOT NULL,<br>
+&nbsp;&nbsp; balance INT unsigned NOT NULL,<br>
+&nbsp;&nbsp; PRIMARY KEY&nbsp; (checking_id)<br>
+) ENGINE=InnoDB;<br>
+      <br>
+INSERT INTO checking (checking_id, name, balance)<br>
+VALUES<br>
+(1, 'sang shin', 1000),<br>
+(2, 'bill gates', 2000);<br>
+      <br>
+/* Create and populate 'savings" table */<br>
+CREATE TABLE savings (<br>
+&nbsp;&nbsp; savings_id SMALLINT UNSIGNED NOT NULL,<br>
+&nbsp;&nbsp; name VARCHAR(45) NOT NULL,<br>
+&nbsp;&nbsp; balance INT unsigned NOT NULL,<br>
+&nbsp;&nbsp; PRIMARY KEY&nbsp; (savings_id)<br>
+) ENGINE=InnoDB;<br>
+      <br>
+INSERT INTO savings (savings_id, name, balance)<br>
+VALUES<br>
+(1, 'sang shin', 100),<br>
+(2, 'bill gates', 100);<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+2. Execute <span style="font-weight: bold;">checking_saving.sql</span>
+and observe the contents of the checking and savings table.<br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">// Read and execute
+"checking_saving.sql" file<br>
+mysql&gt; <span style="font-weight: bold;">SOURCE sqlscripts/checking_saving.sql</span><br>
+Database changed<br>
+Query OK, 0 rows affected (0.08 sec)<br>
+      <br>
+Query OK, 0 rows affected (0.04 sec)<br>
+      <br>
+Query OK, 0 rows affected (0.10 sec)<br>
+      <br>
+Query OK, 2 rows affected (0.00 sec)<br>
+Records: 2&nbsp; Duplicates: 0&nbsp; Warnings: 0<br>
+      <br>
+Query OK, 0 rows affected (0.12 sec)<br>
+      <br>
+Query OK, 2 rows affected (0.00 sec)<br>
+Records: 2&nbsp; Duplicates: 0&nbsp; Warnings: 0<br>
+      <br>
+mysql&gt; <span style="font-weight: bold;">SELECT * FROM checking;</span><br>
++-------------+------------+---------+<br>
+| checking_id | name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | balance |<br>
++-------------+------------+---------+<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1 | sang
+shin&nbsp; |&nbsp;&nbsp;&nbsp; 1000 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2 | bill
+gates |&nbsp;&nbsp;&nbsp; 2000 |<br>
++-------------+------------+---------+<br>
+2 rows in set (0.00 sec)<br>
+      <br>
+mysql&gt; <span style="font-weight: bold;">SELECT * FROM savings;</span><br>
++------------+------------+---------+<br>
+| savings_id | name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | balance |<br>
++------------+------------+---------+<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1 | sang
+shin&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; 100 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2 | bill gates
+|&nbsp;&nbsp;&nbsp;&nbsp; 100 |<br>
++------------+------------+---------+<br>
+2 rows in set (0.00 sec)<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;"><br>
+</div>
+</div>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; <a href="index.html#Exercise_1">return to top of exercise</a><br>
+<br>
+<br>
+<h3 style="margin-left: 40px;" class="tutorial"><a name="1.2"></a>(1.2)&nbsp;
+Start a new transaction and perform database operations<br>
+</h3>
+<br>
+<div style="margin-left: 40px;">
+1. Observe the default isolation level<br>
+<p>Note that there is a Global isolation level, which is represented by <span style="font-weight: bold;">@@GLOBAL.tx_isolation</span>, which will be used for
+any transaction started inside a new MySQL client launched after the
+current MySQL client, and a local isolation level, which is represented by <span style="font-weight: bold;">@@tx_isolation,</span> which will be used
+for any transaction started after the current transaction inside the
+current MySQL client.</p>
+<p>Note also that as the current MySQL client was launched with those
+default isolation levels by the MySQL server, they also apply to the
+current MySQL client and therefore to the next transaction.</p>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">mysql&gt; <span style="font-weight: bold; color: rgb(255, 0, 0);">SELECT
+@@GLOBAL.tx_isolation, @@tx_isolation;</span><br>
++-----------------------+-----------------+<br>
+| @@GLOBAL.tx_isolation | @@tx_isolation |<br>
++-----------------------+-----------------+<br>
+| REPEATABLE-READ | REPEATABLE-READ |<br>
++-----------------------+-----------------+<br>
+1 row in set (0.00 sec)<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+2. Start a transaction and perform
+money transfer of $250 from checking account to saving account.<br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">mysql&gt; <span style="font-weight: bold; color: rgb(255, 0, 0);">START TRANSACTION;</span><br>
+Query OK, 0 rows affected (0.05 sec)<br>
+      <br>
+mysql&gt; <span style="font-weight: bold;">UPDATE checking SET balance
+= balance - 250</span><br>
+&nbsp;&nbsp;&nbsp; -&gt;<span style="font-weight: bold;"> WHERE name =
+'sang shin';</span><br>
+Query OK, 1 row affected (0.00 sec)<br>
+Rows matched: 1&nbsp; Changed: 1&nbsp; Warnings: 0<br>
+      <br>
+mysql&gt;<span style="font-weight: bold;"> UPDATE savings SET balance =
+balance + 250</span><br>
+&nbsp;&nbsp;&nbsp; -&gt; <span style="font-weight: bold;">WHERE name =
+'sang shin';</span><br>
+Query OK, 1 row affected (0.00 sec)<br>
+Rows matched: 1&nbsp; Changed: 1&nbsp; Warnings: 0<br>
+      <br>
+mysql&gt; <span style="font-weight: bold;">SELECT * FROM checking;</span><br>
++-------------+------------+---------+<br>
+| checking_id | name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | balance |<br>
++-------------+------------+---------+<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1 | sang
+shin&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; 750 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2 | bill
+gates |&nbsp;&nbsp;&nbsp; 2000 |<br>
++-------------+------------+---------+<br>
+2 rows in set (0.00 sec)<br>
+      <br>
+mysql&gt; <span style="font-weight: bold;">SELECT * FROM savings;</span><br>
++------------+------------+---------+<br>
+| savings_id | name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | balance |<br>
++------------+------------+---------+<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1 | sang
+shin&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; 350 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2 | bill gates
+|&nbsp;&nbsp;&nbsp;&nbsp; 100 |<br>
++------------+------------+---------+<br>
+2 rows in set (0.00 sec)</td>
+    </tr>
+  </tbody>
+</table>
+<br>
+3. Observe that the changes are not seen from another session<br>
+<p>Launch a new MySQL client for user root.</p>
+<p>In another Terminal or console, depending on your system, issue: <span style="font-weight: bold;">mysql -u root -p</span><br>
+Enter the password for MySQL root user when prompted.</p>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">mysql&gt; <span style="font-weight: bold; color: rgb(255, 0, 0);">SELECT
+@@GLOBAL.tx_isolation, @@tx_isolation;</span><br>
++-----------------------+-----------------+<br>
+| @@GLOBAL.tx_isolation | @@tx_isolation |<br>
++-----------------------+-----------------+<br>
+| REPEATABLE-READ | REPEATABLE-READ |<br>
++-----------------------+-----------------+<br>
+1 row in set (0.00 sec)<br>
+mysql&gt; <span style="font-weight: bold; color: rgb(255, 0, 0);">use
+mydb;</span><br>
+Reading table information for completion of table and column names<br>
+You can turn off this feature to get a quicker startup with -A<br>
+      <br>
+Database changed<br>
+<br><font color="#3333ff"><b>// Observe that the change made by the first client is not reflected </b></font><br>
+mysql&gt; <span style="font-weight: bold; color: rgb(255, 0, 0);">select
+* from checking;</span><br>
++-------------+------------+---------+<br>
+| checking_id | name | balance |<br>
++-------------+------------+---------+<br>
+| 1 | sang shin | 1000 |<br>
+| 2 | bill gates | 2000 |<br>
++-------------+------------+---------+<br>
+2 rows in set (0.00 sec)<br>
+      <br><font color="#3333ff"><b>// Observe that the change made by the first client is not reflected </b></font><br>
+mysql&gt; <span style="font-weight: bold; color: rgb(255, 0, 0);">select
+* from savings;</span><br>
++------------+------------+---------+<br>
+| savings_id | name | balance |<br>
++------------+------------+---------+<br>
+| 1 | sang shin | 100 |<br>
+| 2 | bill gates | 100 |<br>
++------------+------------+---------+<br>
+2 rows in set (0.00 sec)<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; <a href="#Exercise_1">return to top of exercise</a><br>
+<br>
+</div>
+<div style="margin-left: 40px;"><br>
+<br>
+</div>
+<h3 style="margin-left: 40px;" class="tutorial"><a name="1.3"></a>(1.3)&nbsp;
+Perform
+COMMIT</h3>
+<div style="margin-left: 40px;"><br>
+1. Now perform COMMIT in the first client.&nbsp; By performing
+"COMMIT", the
+client is committing all the changes it made inside the previously
+started transaction and thus made it visible to other sessions when
+using the default isolation level.<br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">mysql&gt; <span style="font-weight: bold; color: rgb(255, 0, 0);">COMMIT;</span><br>
+Query OK, 0 rows affected (0.05 sec)<br>
+      <br>
+mysql&gt; <span style="font-weight: bold;">SELECT * FROM checking;</span><br>
++-------------+------------+---------+<br>
+| checking_id | name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | balance |<br>
++-------------+------------+---------+<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1 | sang
+shin&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; 750 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2 | bill
+gates |&nbsp;&nbsp;&nbsp; 2000 |<br>
++-------------+------------+---------+<br>
+2 rows in set (0.00 sec)<br>
+      <br>
+mysql&gt; <span style="font-weight: bold;">SELECT * FROM savings;</span><br>
++------------+------------+---------+<br>
+| savings_id | name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | balance |<br>
++------------+------------+---------+<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1 | sang
+shin&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; 350 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2 | bill gates
+|&nbsp;&nbsp;&nbsp;&nbsp; 100 |<br>
++------------+------------+---------+<br>
+2 rows in set (0.00 sec)<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+2. Check that the changes are now visible in the second client.<br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;"><font color="#3333ff"><b>// Observe that the change made by the first client is now visible</b></font><br>
+mysql&gt; <span style="font-weight: bold; color: rgb(255, 0, 0);">select * from
+checking;</span><br>
++-------------+------------+---------+<br>
+| checking_id | name | balance |<br>
++-------------+------------+---------+<br>
+| 1 | sang shin | 750 |<br>
+| 2 | bill gates | 2000 |<br>
++-------------+------------+---------+<br>
+2 rows in set (0.00 sec)<br>
+      <br>
+<font color="#3333ff"><b>// Observe that the change made by the first client is now visible</b></font><br>
+mysql&gt; <span style="font-weight: bold; color: rgb(255, 0, 0);">select
+* from savings;</span><br>
++------------+------------+---------+<br>
+| savings_id | name | balance |<br>
++------------+------------+---------+<br>
+| 1 | sang shin | 350 |<br>
+| 2 | bill gates | 100 |<br>
++------------+------------+---------+<br>
+2 rows in set (0.00 sec)<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+3. Close the second MySQL client.<br>
+<p>mysql&gt; <span style="font-weight: bold; color: rgb(255, 0, 0);">exit</span></p>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; <a href="index.html#Exercise_1">return to top of exercise</a><br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; <a href="#Tutorial_Exercises">return to top</a><br>
+
+<br>
+<br>
+</div>
+<h2><a name="Exercise_2"></a>Exercise 2: Simple transaction -Rollback<br>
+</h2>
+<p class="pBody" style="margin-left: 40px;">In this exercise,
+you are going to perform rollback.<br>
+</p>
+<div style="margin-left: 40px;">
+<ol start="0">
+  <li><a href="#2.0">Create test tables</a><br>
+  </li>
+  <li><a href="#2.1">Start a new transaction and perform database
+operations<br>
+    </a></li>
+  <li><a href="#2.2">Perform ROLLBACK</a></li>
+  <li><a href="index.html#2.3">Start a new transaction and perform
+partial database operation<br>
+    </a></li>
+  <li><a href="index.html#2.3">Perform ROLLBACK</a><br>
+  </li>
+</ol>
+</div>
+<p class="pBody" style="margin-left: 40px;"></p>
+<br>
+<h3 style="margin-left: 40px;" class="tutorial"><a name="2.0"></a>(2.0)&nbsp;
+Create test tables<br>
+</h3>
+<br>
+<div style="margin-left: 40px;">1. Execute <span style="font-weight: bold;">checking_saving.sql</span><br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">// Read and execute
+"checking_saving.sql" file<br>
+mysql&gt; <span style="font-weight: bold;">SOURCE sqlscripts/checking_saving.sql</span><br>
+Database changed<br>
+Query OK, 0 rows affected (0.08 sec)<br>
+      <br>
+Query OK, 0 rows affected (0.04 sec)<br>
+      <br>
+Query OK, 0 rows affected (0.10 sec)<br>
+      <br>
+Query OK, 2 rows affected (0.00 sec)<br>
+Records: 2&nbsp; Duplicates: 0&nbsp; Warnings: 0<br>
+      <br>
+Query OK, 0 rows affected (0.12 sec)<br>
+      <br>
+Query OK, 2 rows affected (0.00 sec)<br>
+Records: 2&nbsp; Duplicates: 0&nbsp; Warnings: 0<br>
+      <br>
+mysql&gt; <span style="font-weight: bold;">SELECT * FROM checking;</span><br>
++-------------+------------+---------+<br>
+| checking_id | name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | balance |<br>
++-------------+------------+---------+<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1 | sang
+shin&nbsp; |&nbsp;&nbsp;&nbsp; 1000 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2 | bill
+gates |&nbsp;&nbsp;&nbsp; 2000 |<br>
++-------------+------------+---------+<br>
+2 rows in set (0.00 sec)<br>
+      <br>
+mysql&gt; <span style="font-weight: bold;">SELECT * FROM savings;</span><br>
++------------+------------+---------+<br>
+| savings_id | name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | balance |<br>
++------------+------------+---------+<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1 | sang
+shin&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; 100 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2 | bill gates
+|&nbsp;&nbsp;&nbsp;&nbsp; 100 |<br>
++------------+------------+---------+<br>
+2 rows in set (0.00 sec)<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;"><br>
+</div>
+</div>
+<div style="margin-left: 40px;">
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; <a href="index.html#Exercise_2">return to top of exercise</a></div>
+<br>
+<h3 style="margin-left: 40px;" class="tutorial"><a name="2.1"></a>(2.1)&nbsp;
+Start a new transaction and perform money transfer from checking to
+savings<br>
+</h3>
+<br>
+<div style="margin-left: 40px;">
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">mysql&gt; <span style="font-weight: bold; color: rgb(255, 0, 0);">START TRANSACTION;</span><br>
+Query OK, 0 rows affected (0.05 sec)<br>
+      <br>
+mysql&gt; <span style="font-weight: bold;">UPDATE checking SET balance
+= balance - 250</span><br>
+&nbsp;&nbsp;&nbsp; -&gt;<span style="font-weight: bold;"> WHERE name =
+'bill gates';</span><br>
+Query OK, 1 row affected (0.00 sec)<br>
+Rows matched: 1&nbsp; Changed: 1&nbsp; Warnings: 0<br>
+      <br>
+mysql&gt;<span style="font-weight: bold;"> UPDATE savings SET balance =
+balance + 250</span><br>
+&nbsp;&nbsp;&nbsp; -&gt; <span style="font-weight: bold;">WHERE name =
+'bill gates';</span><br>
+Query OK, 1 row affected (0.00 sec)<br>
+Rows matched: 1&nbsp; Changed: 1&nbsp; Warnings: 0<br>
+      <br>
+mysql&gt; <span style="font-weight: bold;">SELECT * FROM checking;</span><br>
++-------------+------------+---------+<br>
+| checking_id | name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | balance |<br>
++-------------+------------+---------+<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1 | sang
+shin&nbsp; |&nbsp;&nbsp;&nbsp; 1000 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2 | bill
+gates |&nbsp;&nbsp;&nbsp; 1750 |<br>
++-------------+------------+---------+<br>
+2 rows in set (0.00 sec)<br>
+      <br>
+mysql&gt; <span style="font-weight: bold;">SELECT * FROM savings;</span><br>
++------------+------------+---------+<br>
+| savings_id | name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | balance |<br>
++------------+------------+---------+<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1 | sang
+shin&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; 100 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2 | bill gates
+|&nbsp;&nbsp;&nbsp;&nbsp; 350 |<br>
++------------+------------+---------+<br>
+2 rows in set (0.00 sec)</td>
+    </tr>
+  </tbody>
+</table>
+<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; <a href="index.html#Exercise_2">return to top of exercise</a><br>
+<br>
+</div>
+<h3 style="margin-left: 40px;" class="tutorial"><a name="2.2"></a>(2.2)&nbsp;
+Perform ROLLBACK</h3>
+<br>
+<div style="margin-left: 40px;">
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">// Perform ROLLBACK.&nbsp; All
+changes that have been made in the
+transaction are now rolled back.<br>
+mysql&gt;<span style="font-weight: bold; color: rgb(255, 0, 0);">
+ROLLBACK;</span><br>
+Query OK, 0 rows affected (0.08 sec)<br>
+      <br>
+mysql&gt; <span style="font-weight: bold;">SELECT * FROM checking;</span><br>
++-------------+------------+---------+<br>
+| checking_id | name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | balance |<br>
++-------------+------------+---------+<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1 | sang
+shin&nbsp; |&nbsp;&nbsp;&nbsp; 1000 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2 | bill
+gates |&nbsp;&nbsp;&nbsp; 2000 |<br>
++-------------+------------+---------+<br>
+2 rows in set (0.00 sec)<br>
+      <br>
+mysql&gt;<span style="font-weight: bold;"> SELECT * FROM savings;</span><br>
++------------+------------+---------+<br>
+| savings_id | name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | balance |<br>
++------------+------------+---------+<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1 | sang
+shin&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; 100 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2 | bill gates
+|&nbsp;&nbsp;&nbsp;&nbsp; 100 |<br>
++------------+------------+---------+<br>
+2 rows in set (0.00 sec)<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+</div>
+<div style="margin-left: 40px;">
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; <a href="index.html#Exercise_2">return to top of exercise</a><br>
+</div>
+<br>
+<h3 style="margin-left: 40px;" class="tutorial"><a name="2.3"></a>(2.3)&nbsp;
+Start a new transaction and perform partial money transfer - money is
+taken out from checking<br>
+</h3>
+<br>
+<div style="margin-left: 40px;">
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">mysql&gt; <span style="font-weight: bold; color: rgb(255, 0, 0);">START TRANSACTION;</span><br>
+Query OK, 0 rows affected (0.05 sec)<br>
+      <br>
+mysql&gt; <span style="font-weight: bold;">UPDATE checking SET balance
+= balance - 250</span><br>
+&nbsp;&nbsp;&nbsp; -&gt;<span style="font-weight: bold;"> WHERE name =
+'bill gates';</span><br>
+Query OK, 1 row affected (0.00 sec)<br>
+Rows matched: 1&nbsp; Changed: 1&nbsp; Warnings: 0<br>
+      <br>
+mysql&gt;<span style="font-weight: bold;"> SELECT * FROM checking;</span><br>
++-------------+------------+---------+<br>
+| checking_id | name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | balance |<br>
++-------------+------------+---------+<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1 | sang
+shin&nbsp; |&nbsp;&nbsp;&nbsp; 1000 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2 | bill
+gates |&nbsp;&nbsp;&nbsp; 1750 |<br>
++-------------+------------+---------+<br>
+2 rows in set (0.00 sec)<br>
+      <br>
+mysql&gt;&nbsp; <span style="font-weight: bold;">SELECT * FROM savings;</span><br>
++------------+------------+---------+<br>
+| savings_id | name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | balance |<br>
++------------+------------+---------+<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1 | sang
+shin&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; 100 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2 | bill gates
+|&nbsp;&nbsp;&nbsp;&nbsp; 100 |<br>
++------------+------------+---------+<br>
+2 rows in set (0.00 sec)</td>
+    </tr>
+  </tbody>
+</table>
+<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; <a href="index.html#Exercise_2">return to top of exercise</a><br>
+<br>
+</div>
+<h3 style="margin-left: 40px;" class="tutorial"><a name="2.4"></a>(2.4)&nbsp;
+Perform ROLLBACK</h3>
+<br>
+<div style="margin-left: 40px;">
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">// Perform ROLLBACK.&nbsp; All
+changes that have been made in the
+transaction are now rolled back.<br>
+mysql&gt;<span style="font-weight: bold; color: rgb(255, 0, 0);">
+ROLLBACK;</span><br>
+Query OK, 0 rows affected (0.08 sec)<br>
+      <br>
+mysql&gt; <span style="font-weight: bold;">SELECT * FROM checking;</span><br>
++-------------+------------+---------+<br>
+| checking_id | name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | balance |<br>
++-------------+------------+---------+<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1 | sang
+shin&nbsp; |&nbsp;&nbsp;&nbsp; 1000 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2 | bill
+gates |&nbsp;&nbsp;&nbsp; 2000 |<br>
++-------------+------------+---------+<br>
+2 rows in set (0.00 sec)<br>
+      <br>
+mysql&gt;<span style="font-weight: bold;"> SELECT * FROM savings;</span><br>
++------------+------------+---------+<br>
+| savings_id | name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | balance |<br>
++------------+------------+---------+<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1 | sang
+shin&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; 100 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2 | bill gates
+|&nbsp;&nbsp;&nbsp;&nbsp; 100 |<br>
++------------+------------+---------+<br>
+2 rows in set (0.00 sec)<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+</div>
+<div style="margin-left: 40px;">
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; <a href="index.html#Exercise_2">return to top of exercise</a><br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; <a href="#Tutorial_Exercises">return to top</a><br>
+
+<br>
+</div>
+<br>
+<h2><a name="Exercise_3"></a>Exercise 3: InnoDB storage engine<br>
+</h2>
+<br>
+<div style="margin-left: 40px;">In MySQL, the only storage engine that
+supports transaction (COMMIT, ROLLBACK) is InnoDB.<br>
+</div>
+<div style="margin-left: 40px;">
+<ol>
+  <li><a href="#3.1">Display storage engines</a></li>
+  <li><a href="#3.2">Observe that InnoDB storage engine honors
+transaction statements</a></li>
+  <li><a href="#3.3">Observe that MyISAM storage engine ignores
+transaction statements<br>
+    </a></li>
+</ol>
+</div>
+<br>
+<h3 style="margin-left: 40px;" class="tutorial"><a name="3.1"></a>(3.1)&nbsp;
+Display storage engines<br>
+</h3>
+<br>
+<div style="margin-left: 40px;">1. Observe that the only storage engine
+that supports transaction is InnoDB storage engine.<br>
+<br>
+</div>
+<div style="margin-left: 40px;">
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">mysql&gt;&nbsp; <span style="font-weight: bold;">SHOW ENGINES</span>;<br>
++------------------+-----------+---------------------------------------------------------------------------+--------------+------+------------+<br>
+&nbsp;|
+Engine&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|
+Support
+
+
+ &nbsp;|
+Comment&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|
+Transactions
+
+
+ | XA | Savepoints |<br>
++------------------+-----------+---------------------------------------------------------------------------+--------------+------+------------+<br>
+&nbsp;|&nbsp;InnoDB&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;YES&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;Supports&nbsp;transactions,&nbsp;row-level&nbsp;locking,&nbsp;and&nbsp;foreign&nbsp;keys&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;YES&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;YES&nbsp;&nbsp;|&nbsp;YES&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br>
+&nbsp;|&nbsp;MRG_MYISAM&nbsp;&nbsp;|&nbsp;YES&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;Collection&nbsp;of&nbsp;identical&nbsp;MyISAM&nbsp;tables&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;NO&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;NO&nbsp;&nbsp;&nbsp;|&nbsp;NO&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br>
+&nbsp;|&nbsp;BLACKHOLE&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;YES&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;/dev/null&nbsp;storage&nbsp;engine&nbsp;(anything&nbsp;you&nbsp;write&nbsp;to&nbsp;it&nbsp;disappears)&nbsp;|&nbsp;NO&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;NO&nbsp;&nbsp;&nbsp;|&nbsp;NO&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br>
+&nbsp;|&nbsp;CSV&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;YES&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;CSV&nbsp;storage&nbsp;engine&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;NO&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;NO&nbsp;&nbsp;&nbsp;|&nbsp;NO&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br>
+&nbsp;|&nbsp;MEMORY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;YES&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;Hash&nbsp;based,&nbsp;stored&nbsp;in&nbsp;memory,&nbsp;useful&nbsp;for&nbsp;temporary&nbsp;tables&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;NO&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;NO&nbsp;&nbsp;&nbsp;|&nbsp;NO&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br>
+&nbsp;|&nbsp;FEDERATED&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;NO&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;Federated&nbsp;MySQL&nbsp;storage&nbsp;engine&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;NULL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;NULL&nbsp;|&nbsp;NULL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br>
+&nbsp;|&nbsp;ARCHIVE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;YES&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;Archive&nbsp;storage&nbsp;engine&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;NO&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;NO&nbsp;&nbsp;&nbsp;|&nbsp;NO&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br>
+&nbsp;|&nbsp;MyISAM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;DEFAULT&nbsp;|&nbsp;Default&nbsp;engine&nbsp;as&nbsp;of&nbsp;MySQL&nbsp;3.23&nbsp;with&nbsp;great&nbsp;performance&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;NO&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;NO&nbsp;&nbsp;&nbsp;|&nbsp;NO&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br>
++------------------+-----------+---------------------------------------------------------------------------+--------------+------+------------+<br>
+8 rows in set (0.00 sec)<br>
+      <br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; <a href="index.html#Exercise_3">return to top of exercise</a><br>
+<div style="margin-left: 40px;"><br>
+</div>
+<br>
+</div>
+<h3 style="margin-left: 40px;" class="tutorial"><a name="3.2"></a>(3.2)&nbsp;
+Observe that InnoDB storage engine honors transaction statements<br>
+</h3>
+<div style="margin-left: 40px;"><br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">mysql&gt; <span style="font-weight: bold;">CREATE TABLE transaction1_InnoDB (id INT, </span><span style="font-weight: bold;">name VARCHAR(50)</span><span style="font-weight: bold;">)</span> <span style="font-weight: bold;">ENGINE =
+InnoDB;</span><br>
+Query OK, 0 rows affected (0.18 sec)<br>
+      <br>
+mysql&gt; <span style="font-weight: bold;">START TRANSACTION;</span><br>
+Query OK, 0 rows affected (0.00 sec)<br>
+      <br>
+mysql&gt;<span style="font-weight: bold;"> INSERT INTO
+transaction1_InnoDB(id, name)</span><br>
+&nbsp;&nbsp;&nbsp; -&gt; <span style="font-weight: bold;">VALUES</span><br>
+&nbsp;&nbsp;&nbsp; -&gt; <span style="font-weight: bold;">(1, 'sang
+shin');</span><br>
+Query OK, 1 row affected (0.04 sec)<br>
+      <br>
+mysql&gt; <span style="font-weight: bold;">SELECT * FROM
+transaction1_InnoDB;</span><br>
++------+-----------+<br>
+| id&nbsp;&nbsp; | name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |<br>
++------+-----------+<br>
+|&nbsp;&nbsp;&nbsp; 1 | sang shin |<br>
++------+-----------+<br>
+1 row in set (0.00 sec)<br>
+      <br>
+// Observe that the ROLLBACK command is honored in InnoDB storage
+engine.<br>
+mysql&gt; <span style="font-weight: bold;">ROLLBACK;</span><br>
+Query OK, 0 rows affected (0.04 sec)<br>
+      <br>
+mysql&gt; <span style="font-weight: bold;">SELECT * FROM
+transaction1_InnoDB;</span><br>
+Empty set (0.00 sec)<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; <a href="index.html#Exercise_3">return to top of exercise</a><br>
+<br>
+</div>
+<h3 style="margin-left: 40px;" class="tutorial"><a name="3.3"></a>(3.3)&nbsp;
+Observe that MyISAM storage engine ignores transaction statements<br>
+</h3>
+<div style="margin-left: 40px;"><br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">mysql&gt; <span style="font-weight: bold;">CREATE TABLE transaction2_MyISAM (id INT,
+name VARCHAR(50))</span><span style="font-weight: bold;">ENGINE =
+MyISAM;</span><br>
+Query OK, 0 rows affected (0.09 sec)<br>
+      <br>
+mysql&gt;<span style="font-weight: bold;"> START TRANSACTION;</span><br>
+Query OK, 0 rows affected (0.00 sec)<br>
+      <br>
+mysql&gt;<span style="font-weight: bold;"> INSERT INTO
+transaction2_MyISAM (id, name)</span><br>
+&nbsp;&nbsp;&nbsp; -&gt; <span style="font-weight: bold;">VALUES</span><br>
+&nbsp;&nbsp;&nbsp; -&gt;<span style="font-weight: bold;"> (1, 'sang
+shin');</span><br>
+Query OK, 1 row affected (0.00 sec)<br>
+      <br>
+mysql&gt; <span style="font-weight: bold;">SELECT * FROM
+transaction2_MyISAM;</span><br>
++------+-----------+<br>
+| id&nbsp;&nbsp; | name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |<br>
++------+-----------+<br>
+|&nbsp;&nbsp;&nbsp; 1 | sang shin |<br>
++------+-----------+<br>
+1 row in set (0.00 sec)<br>
+      <br><b>
+  <font color="#3333ff">/</font></b><font color="#3333ff"><b>/ Observe that the ROLLBACK is ignored in MyISAM storage engine</b></font><br>
+mysql&gt; <span style="font-weight: bold;">ROLLBACK;</span><br>
+Query OK, 0 rows affected, 1 warning (0.00 sec)<br>
+      <br>
+mysql&gt; SHOW WARNINGS;<br>
++---------+------+---------------------------------------------------------------+<br>
+| Level | Code | Message |<br>
++---------+------+---------------------------------------------------------------+<br>
+| Warning | 1196 | Some non-transactional changed tables couldn't be
+rolled back |<br>
++---------+------+---------------------------------------------------------------+<br>
+1 row in set (0.00 sec)<br>
+      <br>
+mysql&gt; <span style="font-weight: bold;">SELECT * FROM
+transaction2_MyISAM;</span><br>
++------+-----------+<br>
+| id&nbsp;&nbsp; | name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |<br>
++------+-----------+<br>
+|&nbsp;&nbsp;&nbsp; 1 | sang shin |<br>
++------+-----------+<br>
+1 row in set (0.00 sec)<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; <a href="index.html#Exercise_3">return to top of exercise</a><br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; <a href="#Tutorial_Exercises">return to top</a><br>
+<br>
+</div>
+<br>
+<br>
+<h2><a name="Exercise_4"></a>Exercise 4: Savepoints<br>
+</h2>
+<p class="pBody" style="margin-left: 40px;">The <code class="literal">SAVEPOINT</code>
+statement sets a named
+transaction savepoint with a name of <em class="replaceable"><code>identifier</code></em>.
+If the current transaction has a savepoint with the same name, the old
+savepoint is deleted and a new one is set.<br>
+</p>
+<p class="pBody" style="margin-left: 40px;">The <code class="literal">ROLLBACK
+TO SAVEPOINT</code> statement rolls back
+a transaction to the named savepoint without terminating the
+transaction. Modifications that the current transaction made to rows
+after the savepoint was set are undone in the rollback. </p>
+<br>
+<h3 style="margin-left: 40px;" class="tutorial"><a name="4.1"></a>(4.1)&nbsp;
+Create several savepoints<br>
+</h3>
+<br>
+<div style="margin-left: 40px;">0. Study SAVEPOINT<br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">mysql&gt; HELP SAVEPOINT;<br>
+Name: 'SAVEPOINT'<br>
+Description:<br>
+Syntax:<br>
+SAVEPOINT identifier<br>
+ROLLBACK [WORK] TO [SAVEPOINT] identifier<br>
+RELEASE SAVEPOINT identifier<br>
+      <br>
+InnoDB supports the SQL statements SAVEPOINT, ROLLBACK TO SAVEPOINT,<br>
+RELEASE SAVEPOINT and the optional WORK keyword for ROLLBACK.<br>
+      <br>
+URL: http://dev.mysql.com/doc/refman/5.1/en/savepoint.html<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+1. Create several savepoints.<br>
+<br>
+</div>
+<div style="margin-left: 40px;">
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;"><font color="#3333ff"><font color="#000000">mysql&gt;<b> SOURCE sqlscripts/person_data.sql</b><br>
+
+Database changed<br>
+
+Query OK, 0 rows affected (0.10 sec)<br>
+    <br>
+
+Query OK, 0 rows affected (0.08 sec)</font>
+      <font color="#000000"><br>
+    <br>
+
+Query OK, 5 rows affected (0.03 sec)</font>
+      <font color="#000000"><br>
+
+Records: 5&nbsp; Duplicates: 0&nbsp; Warnings: 0</font><br>
+  <b><br>
+// Start a new transaction</b></font><br>
+mysql&gt; <span style="font-weight: bold;">START TRANSACTION;</span><br>
+Query OK, 0 rows affected (0.00 sec)<br>
+      <br>
+<font color="#3333ff"><b>// Insert a new record 31 within the transaction</b></font><br>
+mysql&gt; <span style="font-weight: bold;">INSERT INTO person
+(person_id, first_name, last_name, age)</span><br>
+&nbsp;&nbsp;&nbsp; -&gt; <span style="font-weight: bold;">VALUES</span><br>
+&nbsp;&nbsp;&nbsp; -&gt; <span style="font-weight: bold;">(31,
+'hannah', 'song', 15);</span><br>
+Query OK, 1 row affected (0.00 sec)<br>
+      <br>
+<font color="#3333ff"><b>// Perform SAVEPOINT and name it as "person31"</b></font><br>
+mysql&gt; <span style="font-weight: bold;">SAVEPOINT person31;</span><br>
+Query OK, 0 rows affected (0.00 sec)<br>
+      <br>
+<font color="#3333ff"><b>// Observe that the record 31 is present</b></font><br>
+mysql&gt; <span style="font-weight: bold;">select * from person;</span><br>
++-----------+------------+-----------+-----+<br>
+| person_id | first_name | last_name | age |<br>
++-----------+------------+-----------+-----+<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;|&nbsp;sang&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;shin&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;88&nbsp;|<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;|&nbsp;kelly&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;jones&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;22&nbsp;|<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3&nbsp;|&nbsp;jack&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;kennedy&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;56&nbsp;|<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4&nbsp;|&nbsp;paul&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;kennedy&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;34&nbsp;|<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5&nbsp;|&nbsp;daniel&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;song&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;24&nbsp;|<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;31&nbsp;|&nbsp;hannah&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;song&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;15&nbsp;|<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;222&nbsp;|&nbsp;tom&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;jones&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;21&nbsp;|<br>
++-----------+------------+-----------+-----+<br>
+7 rows in set (0.00 sec)<br>
+      <br>
+<font color="#3333ff"><b>// Insert a new record 32</b></font><br>
+mysql&gt; <span style="font-weight: bold;">INSERT INTO person
+(person_id, first_name, last_name, age)</span><br>
+&nbsp;&nbsp;&nbsp; -&gt;<span style="font-weight: bold;"> VALUES</span><br>
+&nbsp;&nbsp;&nbsp; -&gt; <span style="font-weight: bold;">(32, 'dadu',
+'kim', 25);</span><br>
+Query OK, 1 row affected (0.00 sec)<br>
+      <br>
+<font color="#3333ff"><b>// Perform SAVEPOINT and name it as "person32"</b></font><br>
+mysql&gt; <span style="font-weight: bold;">SAVEPOINT person32;</span><br>
+Query OK, 0 rows affected (0.00 sec)<br>
+      <br>
+<font color="#3333ff"><b>// Insert a new record 33</b></font><br>
+mysql&gt;<span style="font-weight: bold;"> INSERT INTO person
+(person_id, first_name, last_name, age)</span><br>
+&nbsp;&nbsp;&nbsp; -&gt; <span style="font-weight: bold;">VALUES</span><br>
+&nbsp;&nbsp;&nbsp; -&gt; <span style="font-weight: bold;">(33,
+'daniel', 'ahn', 45);</span><br>
+Query OK, 1 row affected (0.00 sec)<br>
+      <br><font color="#3333ff"><b>
+// Perform SAVEPOINT and name it as "person33"</b></font><br>
+mysql&gt;<span style="font-weight: bold;"> SAVEPOINT person33;</span><br>
+Query OK, 0 rows affected (0.00 sec)<br>
+      <br>
+<font color="#3333ff"><b>// Observe that the records, 31, 32, and 33 are present</b></font><br>
+mysql&gt; <span style="font-weight: bold;">select * from person;</span><br>
++-----------+------------+-----------+-----+<br>
+| person_id | first_name | last_name | age |<br>
++-----------+------------+-----------+-----+<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;|&nbsp;sang&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;shin&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;88&nbsp;|<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;|&nbsp;kelly&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;jones&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;22&nbsp;|<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3&nbsp;|&nbsp;jack&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;kennedy&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;56&nbsp;|<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4&nbsp;|&nbsp;paul&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;kennedy&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;34&nbsp;|<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5&nbsp;|&nbsp;daniel&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;song&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;24&nbsp;|<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;31&nbsp;|&nbsp;hannah&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;song&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;15&nbsp;|<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;|&nbsp;dadu&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;kim&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;25&nbsp;|<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;33&nbsp;|&nbsp;daniel&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;ahn&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;45&nbsp;|<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;222&nbsp;|&nbsp;tom&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;jones&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;21&nbsp;|<br>
++-----------+------------+-----------+-----+<br>
+9 rows in set (0.00 sec)<br>
+      <br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+2. Rollback to a savepoint<br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;"><font color="#3333ff"><b>// Rollback to "person32"
+savepoint</b></font><br>
+mysql&gt; <span style="font-weight: bold;">ROLLBACK TO SAVEPOINT
+person32;</span><br>
+Query OK, 0 rows affected (0.00 sec)<br>
+      <br><font color="#3333ff"><b>
+// Observe that things are rolled back to the "person32" savepoint</b></font><br>
+mysql&gt; <span style="font-weight: bold;">SELECT * FROM person;</span><br>
++-----------+------------+-----------+-----+<br>
+| person_id | first_name | last_name | age |<br>
++-----------+------------+-----------+-----+<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;|&nbsp;sang&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;shin&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;88&nbsp;|<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;|&nbsp;kelly&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;jones&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;22&nbsp;|<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3&nbsp;|&nbsp;jack&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;kennedy&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;56&nbsp;|<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4&nbsp;|&nbsp;paul&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;kennedy&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;34&nbsp;|<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5&nbsp;|&nbsp;daniel&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;song&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;24&nbsp;|<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;31&nbsp;|&nbsp;hannah&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;song&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;15&nbsp;|<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;|&nbsp;dadu&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;kim&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;25&nbsp;|<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;222&nbsp;|&nbsp;tom&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;jones&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;21&nbsp;|<br>
++-----------+------------+-----------+-----+<br>
+      <br>
+mysql&gt; <span style="font-weight: bold;">SELECT COUNT(age) FROM
+person;</span><br>
++------------+<br>
+| COUNT(age) |<br>
++------------+<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 8 |<br>
++------------+<br>
+1 row in set (0.00 sec) </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+</div>
+<div style="margin-left: 40px;">
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; <a href="index.html#Exercise_4">return to top of exercise</a><br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; <a href="#Tutorial_Exercises">return to top</a><br>
+
+<br>
+<br>
+</div>
+<br>
+<h2><a name="Exercise_5"></a>Exercise 5: Isolation Levels<br>
+</h2>
+<br>
+<div style="margin-left: 40px;">A transaction isolation level sets the
+default transactional behavior. So far, our examples all took the
+default setting. Now, we will see how changing the transaction
+isolation level leads to different results. As the name suggests, the
+setting determines how isolated each transaction is, or what kind of
+locks are associated with queries inside a transaction. The four
+levels, in ascending order of strictness, are:<br>
+<ul>
+  <li>READ UNCOMMITTED: Barely transactional, this setting allows for
+so-called 'dirty reads', where queries inside one transaction are
+affected by uncommitted changes in another transaction.</li>
+  <li>READ COMMITTED: Committed updates are visible within another
+transaction. This means identical queries within a transaction can
+return differing results. <br>
+  </li>
+  <li>REPEATABLE READ: The default isolation level for InnoDB tables.
+Within a transaction, all reads are consistent.</li>
+  <li>SERIALIZABLE: Updates are not permitted in other transactions if
+a transaction has run an ordinary SELECT query, i.e. queries are
+treated as if they had a LOCK IN SHARE MODE. </li>
+</ul>
+InnoDB tables support all four SQL standard transaction isolation
+levels.<br>
+<p>All along this exercise, we will use a MySQL client, named as <span style="font-weight: bold;">client #0</span>, as the client used to
+change the global default isolation level, two others MySQL clients,
+named <span style="font-weight: bold;">client #1</span> and <span style="font-weight: bold;">client #2</span>, will be used to test the
+transactional behavior depending on the isolation level.</p>
+<ol start="0">
+  <li><a href="#5.0">Create test table</a></li>
+  <li><a href="#5.1">Use READ UNCOMMITTED Isolation level</a></li>
+  <li><a href="#5.2">Use READ COMMITTED Isolation level</a></li>
+  <li><a href="#5.3">Use REPEATABLE READ Isolation level</a></li>
+  <li><a href="#5.4">Use SERIALIZABLE Isolation level</a><br>
+  </li>
+</ol>
+<br>
+</div>
+<h3 style="margin-left: 40px;" class="tutorial"><a name="5.0"></a>(5.0)&nbsp;
+Create test table</h3>
+<br>
+<div style="margin-left: 40px;">0. Start with clean "person"
+test data in client #0.<br>
+<br>
+</div>
+<table style="width: 100%; text-align: left; margin-left: 40px;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">mysql&gt; <span style="font-weight: bold;">SOURCE sqlscripts/person_data.sql</span><br>
+Database changed<br>
+Query OK, 0 rows affected (0.10 sec)<br>
+      <br>
+Query OK, 0 rows affected (0.08 sec)<br>
+      <br>
+Query OK, 5 rows affected (0.03 sec)<br>
+Records: 5&nbsp; Duplicates: 0&nbsp; Warnings: 0<br>
+      <br>
+mysql&gt; <span style="font-weight: bold;">SELECT * FROM person;</span><br>
++-----------+------------+-----------+-----+<br>
+| person_id | first_name | last_name | age |<br>
++-----------+------------+-----------+-----+<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1 |
+sang&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |
+shin&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp; 88 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2 |
+kelly&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | jones&nbsp;&nbsp;&nbsp;&nbsp;
+|&nbsp; 22 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3 |
+jack&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | kennedy&nbsp;&nbsp; |&nbsp;
+56 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4 |
+paul&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | kennedy&nbsp;&nbsp; |&nbsp;
+34 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 5 |
+daniel&nbsp;&nbsp;&nbsp;&nbsp; | song&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+|&nbsp; 24 |<br>
++-----------+------------+-----------+-----+<br>
+5 rows in set (0.00 sec)<br>
+      <br>
+mysql&gt; <span style="font-weight: bold;">SELECT COUNT(person_id)
+from person;</span><br>
++------------------+<br>
+| COUNT(person_id) |<br>
++------------------+<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+5 |<br>
++------------------+<br>
+1 row in set (0.00 sec)</td>
+    </tr>
+  </tbody>
+</table>
+<div style="margin-left: 40px;"><br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; <a href="index.html#Exercise_5">return to top of exercise</a><br>
+</div>
+<div style="margin-left: 40px;"><br>
+</div>
+<h3 style="margin-left: 40px;" class="tutorial"><a name="5.1"></a>(5.1)&nbsp;
+Use READ
+UNCOMMITTED Isolation level</h3>
+<div style="margin-left: 40px;"><br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">Client #1:&nbsp; Start
+Transaction----INSERT a record&nbsp;
+A-----------------------------------ROLLBACK-------------------------------&gt;<br>
+Client #2:&nbsp; Start Transaction---------------------------<span style="color: rgb(255, 0, 0);">(See Record A:Dirty read)</span>---------------(Does
+not see Record A)--&gt;</td>
+    </tr>
+  </tbody>
+</table>
+<br>
+</div>
+<div style="margin-left: 40px;">1. Set the global Transaction Isolation
+level to READ UNCOMMITTED in client #0.<br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">mysql&gt; <span style="font-weight: bold;">USE information_schema;</span><br>
+Database changed<br>
+      <br>
+<font color="#3333ff"><b>// Observe that the global default isolation level is set to </b><b>REPEATABLE READ</b></font><br>
+mysql&gt; <span style="font-weight: bold;">SELECT * from
+GLOBAL_VARIABLES WHERE VARIABLE_NAME LIKE '%ISOLATION%';</span><br>
++--------------------+-----------------------+<br>
+| VARIABLE_NAME | VARIABLE_VALUE&nbsp;&nbsp; |<br>
++--------------------+-----------------------+<br>
+| <span style="color: rgb(255, 0, 0);">TX_ISOLATION&nbsp;&nbsp;&nbsp;
+|
+REPEATABLE-READ</span> |<br>
++--------------------+-----------------------+<br>
+1 row in set (0.00 sec)<br>
+      <br><font color="#3333ff"><b>
+// Set the global isolation level to READ UNCOMMITTED</b></font><br>
+mysql&gt;<span style="font-weight: bold; color: rgb(255, 0, 0);"> <span style="color: rgb(255, 0, 0);">SET
+GLOBAL TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;</span></span><br>
+Query OK, 0 rows affected (0.00 sec)<br>
+      <br>
+<font color="#3333ff"><b>// Verify that the global isolation level is set to READ UNCOMMITTED,</b><b><br>
+  </b><b>
+// but that the local isolation level is still the default REPEATABLE
+READ</b></font><br>
+mysql&gt; <span style="font-weight: bold;">SELECT
+@@GLOBAL.tx_isolation, @@tx_isolation;</span><br>
++-----------------------------+-----------------------+<br>
+| @@GLOBAL.tx_isolation | @@tx_isolation&nbsp;&nbsp;&nbsp;&nbsp; |<br>
++-----------------------------+-----------------------+<br>
+| <span style="color: rgb(255, 0, 0);">READ-UNCOMMITTED &nbsp;&nbsp; |
+REPEATABLE-READ</span> |<br>
++-----------------------------+-----------------------+<br>
+1 row in set (0.00 sec)<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+2. Start a new MySQL client, client #1, and verify that the local
+isolation level is now READ UNCOMMITTED
+<p>Launch a new MySQL client for user root.</p>
+<p>In another Terminal or console, depending on your system, issue: <span style="font-weight: bold;">mysql -u root -p</span><br>
+Enter the password for MySQL root user when prompted.</p>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;"><font color="#3333ff"><b>// Verify that both global and
+local isolation levels are set to READ UNCOMMITTED.</b></font><br>
+mysql&gt; <span style="font-weight: bold;">SELECT
+@@GLOBAL.tx_isolation, @@tx_isolation;</span><br>
++-----------------------------+-----------------------+<br>
+| @@GLOBAL.tx_isolation | @@tx_isolation&nbsp;&nbsp;&nbsp;&nbsp; |<br>
++-----------------------------+-----------------------+<br>
+| <span style="color: rgb(255, 0, 0);">READ-UNCOMMITTED &nbsp;&nbsp; |
+READ-UNCOMMITTED</span> |<br>
++-----------------------------+-----------------------+<br>
+1 row in set (0.00 sec)<br>
+      <br>
+// Change the database to work with the person table.<br>
+mysql&gt; <span style="font-weight: bold;">USE mydb;</span><br>
+Database changed<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+3. In client #1, start a transaction.<br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">// Client #1 starts a
+transaction.<br>
+mysql&gt;<span style="font-weight: bold;"> <span style="color: rgb(0, 0, 0);">START TRANSACTION;</span></span><br>
+Query OK, 0 rows affected (0.00 sec)<br>
+      <br>
+mysql&gt;<span style="font-weight: bold;"> SELECT * FROM person;</span><br>
++-----------+------------+-----------+-----+<br>
+| person_id | first_name | last_name | age |<br>
++-----------+------------+-----------+-----+<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1 |
+sang&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |
+shin&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp; 88 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2 |
+kelly&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | jones&nbsp;&nbsp;&nbsp;&nbsp;
+|&nbsp; 22 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3 |
+jack&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | kennedy&nbsp;&nbsp; |&nbsp;
+56 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4 |
+paul&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | kennedy&nbsp;&nbsp; |&nbsp;
+34 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 5 |
+daniel&nbsp;&nbsp;&nbsp;&nbsp; | song&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+|&nbsp; 24 |<br>
++-----------+------------+-----------+-----+<br>
+5 rows in set (0.00 sec)<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+4. Start a new MySQL client, client #2.
+<p>Launch a new MySQL client for user root.</p>
+<p>In another Terminal or console, depending on your system, issue: <span style="font-weight: bold;">mysql -u root -p</span><br>
+Enter the password for MySQL root user when prompted.</p>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">// Verify that both global and
+local isolation levels are set to READ UNCOMMITTED.<br>
+mysql&gt; <span style="font-weight: bold;">SELECT
+@@GLOBAL.tx_isolation, @@tx_isolation;</span><br>
++-----------------------------+-----------------------+<br>
+| @@GLOBAL.tx_isolation | @@tx_isolation&nbsp;&nbsp;&nbsp;&nbsp; |<br>
++-----------------------------+-----------------------+<br>
+| <span style="color: rgb(255, 0, 0);">READ-UNCOMMITTED &nbsp;&nbsp; |
+READ-UNCOMMITTED</span> |<br>
++-----------------------------+-----------------------+<br>
+1 row in set (0.00 sec)<br>
+      <br>
+// Change the database to work with the person table.<br>
+mysql&gt; <span style="font-weight: bold;">USE mydb;</span><br>
+Database changed<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+5. In client #2, start a transaction.<br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">mysql&gt; <span style="font-weight: bold; color: rgb(0, 0, 0);">START TRANSACTION;</span><br>
+Query OK, 0 rows affected (0.00 sec)<br>
+      <br>
+mysql&gt; <span style="font-weight: bold;">SELECT * FROM person;</span><br>
++-----------+------------+-----------+-----+<br>
+| person_id | first_name | last_name | age |<br>
++-----------+------------+-----------+-----+<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1 |
+sang&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |
+shin&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp; 88 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2 |
+kelly&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | jones&nbsp;&nbsp;&nbsp;&nbsp;
+|&nbsp; 22 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3 |
+jack&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | kennedy&nbsp;&nbsp; |&nbsp;
+56 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4 |
+paul&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | kennedy&nbsp;&nbsp; |&nbsp;
+34 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 5 |
+daniel&nbsp;&nbsp;&nbsp;&nbsp; | song&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+|&nbsp; 24 |<br>
++-----------+------------+-----------+-----+<br>
+5 rows in set (0.00 sec)<span style="font-weight: bold;"><br>
+      </span></td>
+    </tr>
+  </tbody>
+</table>
+<br>
+6. In client #1, add a new record.<br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">// Insert a new record in client
+under transaction.<br>
+mysql&gt; <span style="font-weight: bold;">INSERT INTO person
+(person_id, first_name, last_name, age)</span><br>
+&nbsp;&nbsp;&nbsp; -&gt; <span style="font-weight: bold;">VALUES</span><br>
+&nbsp;&nbsp;&nbsp; -&gt; <span style="font-weight: bold;">(41, 'tom',
+'jones', 43);</span><br>
+Query OK, 1 row affected (0.00 sec)<br>
+      <br>
+// Client #1 sees the change he made.<br>
+mysql&gt; <span style="font-weight: bold;">SELECT * FROM person;</span><br>
++-----------+------------+-----------+-----+<br>
+| person_id | first_name | last_name | age |<br>
++-----------+------------+-----------+-----+<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1 |
+sang&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |
+shin&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp; 88 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2 |
+kelly&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | jones&nbsp;&nbsp;&nbsp;&nbsp;
+|&nbsp; 22 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3 |
+jack&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | kennedy&nbsp;&nbsp; |&nbsp;
+56 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4 |
+paul&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | kennedy&nbsp;&nbsp; |&nbsp;
+34 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 5 |
+daniel&nbsp;&nbsp;&nbsp;&nbsp; | song&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+|&nbsp; 24 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 41 |
+tom&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |
+jones&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp; 43 |<br>
++-----------+------------+-----------+-----+<br>
+6 rows in set (0.00 sec)</td>
+    </tr>
+  </tbody>
+</table>
+<br>
+7. In client #2, observe the dirty read.&nbsp; You are seeing a record
+that has not been committed by client #1.<br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">mysql&gt; <span style="font-weight: bold;">SELECT * FROM person;</span><br>
++-----------+------------+-----------+-----+<br>
+| person_id | first_name | last_name | age |<br>
++-----------+------------+-----------+-----+<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1 |
+sang&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |
+shin&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp; 88 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2 |
+kelly&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | jones&nbsp;&nbsp;&nbsp;&nbsp;
+|&nbsp; 22 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3 |
+jack&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | kennedy&nbsp;&nbsp; |&nbsp;
+56 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4 |
+paul&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | kennedy&nbsp;&nbsp; |&nbsp;
+34 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 5 |
+daniel&nbsp;&nbsp;&nbsp;&nbsp; | song&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+|&nbsp; 24 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: rgb(255, 0, 0);"> 41 |
+tom&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |
+jones&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp; 43 |</span><br>
++-----------+------------+-----------+-----+<br>
+6 rows in set (0.00 sec)<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+8. In client #1, do ROLLBACK.<br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">mysql&gt; <span style="font-weight: bold;">ROLLBACK;</span><br>
+Query OK, 0 rows affected (0.07 sec)<br>
+      <br>
+mysql&gt; <span style="font-weight: bold;">SELECT * FROM person;</span><br>
++-----------+------------+-----------+-----+<br>
+| person_id | first_name | last_name | age |<br>
++-----------+------------+-----------+-----+<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1 |
+sang&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |
+shin&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp; 88 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2 |
+kelly&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | jones&nbsp;&nbsp;&nbsp;&nbsp;
+|&nbsp; 22 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3 |
+jack&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | kennedy&nbsp;&nbsp; |&nbsp;
+56 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4 |
+paul&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | kennedy&nbsp;&nbsp; |&nbsp;
+34 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 5 |
+daniel&nbsp;&nbsp;&nbsp;&nbsp; | song&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+|&nbsp; 24 |<br>
++-----------+------------+-----------+-----+<br>
+5 rows in set (0.00 sec)<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+9. In client #2, observe that the previously visible record (through
+dirty read)&nbsp; is gone.<br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">mysql&gt; <span style="font-weight: bold;">SELECT * FROM person;</span><br>
++-----------+------------+-----------+-----+<br>
+| person_id | first_name | last_name | age |<br>
++-----------+------------+-----------+-----+<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1 |
+sang&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |
+shin&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp; 88 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2 |
+kelly&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | jones&nbsp;&nbsp;&nbsp;&nbsp;
+|&nbsp; 22 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3 |
+jack&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | kennedy&nbsp;&nbsp; |&nbsp;
+56 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4 |
+paul&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | kennedy&nbsp;&nbsp; |&nbsp;
+34 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 5 |
+daniel&nbsp;&nbsp;&nbsp;&nbsp; | song&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+|&nbsp; 24 |<br>
++-----------+------------+-----------+-----+<br>
+5 rows in set (0.00 sec)<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; <a href="index.html#Exercise_5">return to top of exercise</a><br>
+</div>
+<br>
+<h3 style="margin-left: 40px;" class="tutorial"><a name="5.2"></a>(5.2)
+Use
+READ
+COMMITTED Isolation level</h3>
+<br>
+<div style="margin-left: 40px;">
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">Client #1:&nbsp; Start
+Transaction----INSERT a record&nbsp;
+A------------COMMIT-----------------------------------------&gt;<br>
+Client #2:&nbsp; Start Transaction----------------<span style="color: rgb(255, 0, 0);">(Not see Record A)----------(See Record
+A)</span>------COMMIT------&gt;</td>
+    </tr>
+  </tbody>
+</table>
+<br>
+</div>
+<div style="margin-left: 40px;">1. Set the global transaction isolation
+level to READ COMMITTED in client #0.<br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">mysql&gt; <span style="font-weight: bold;">SET GLOBAL TRANSACTION ISOLATION LEVEL <font color="#ff0000">READ
+COMMITTED;</font></span><br>
+Query OK, 0 rows affected (0.00 sec)<br>
+      <br>
+// Verify that the global isolation level is set to READ COMMITTED,<br>
+// but that the local isolation level is still the default REPEATABLE
+READ<br>
+mysql&gt; <span style="font-weight: bold;">SELECT
+@@GLOBAL.tx_isolation, @@tx_isolation;</span><br>
++-----------------------------+-----------------------+<br>
+| @@GLOBAL.tx_isolation | @@tx_isolation&nbsp;&nbsp;&nbsp;&nbsp; |<br>
++-----------------------------+-----------------------+<br>
+| <span style="color: rgb(255, 0, 0);">READ-COMMITTED &nbsp;&nbsp; |
+REPEATABLE-READ</span> |<br>
++-----------------------------+-----------------------+<br>
+1 row in set (0.00 sec)<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+2. In client #1, check that the local isolation level is still READ
+UNCOMMITTED<br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">// Verify that the global
+isolation level is set to READ COMMITTED,<br>
+// but that the local isolation level is still READ UNCOMMITTED,<br>
+// because the client #1 was launched before the global isolation level
+was changed to READ COMMITTED,<br>
+// therefore the previous isolation level applies.<br>
+mysql&gt; <span style="font-weight: bold;">SELECT
+@@GLOBAL.tx_isolation, @@tx_isolation;</span><br>
++-----------------------------+-----------------------+<br>
+| @@GLOBAL.tx_isolation | @@tx_isolation&nbsp;&nbsp;&nbsp;&nbsp; |<br>
++-----------------------------+-----------------------+<br>
+| <span style="color: rgb(255, 0, 0);">READ-COMMITTED &nbsp;&nbsp; |
+READ-UNCOMMITTED</span> |<br>
++-----------------------------+-----------------------+<br>
+1 row in set (0.00 sec)<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+3. In client #2, check that the local isolation level is still READ
+UNCOMMITTED<br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">// Verify that the global
+isolation level is set to READ COMMITTED,<br>
+// but that the local isolation level is still READ UNCOMMITTED,<br>
+// because the client #2 was launched before the global isolation level
+was changed to READ COMMITTED,<br>
+// therefore the previous isolation level applies.<br>
+mysql&gt; <span style="font-weight: bold;">SELECT
+@@GLOBAL.tx_isolation, @@tx_isolation;</span><br>
++-----------------------------+-----------------------+<br>
+| @@GLOBAL.tx_isolation | @@tx_isolation&nbsp;&nbsp;&nbsp;&nbsp; |<br>
++-----------------------------+-----------------------+<br>
+| <span style="color: rgb(255, 0, 0);">READ-COMMITTED &nbsp;&nbsp; |
+READ-UNCOMMITTED</span> |<br>
++-----------------------------+-----------------------+<br>
+1 row in set (0.00 sec)<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+4. Exit from client #1 and relaunch it<br>
+<p>At the mysql prompt, type exit to close the client #1.</p>
+<p>In the same Terminal or console, depending on your system, issue: <span style="font-weight: bold;">mysql -u root -p</span><br>
+Enter the password for MySQL root user when prompted.</p>
+5. Exit from client #2 and relaunch it<br>
+<p>At the mysql prompt, type exit to close the client #2.</p>
+<p>In the same Terminal or console, depending on your system, issue: <span style="font-weight: bold;">mysql -u root -p</span><br>
+Enter the password for MySQL root user when prompted.</p>
+6. Check that now the local isolation level is set to READ COMMITTED in
+client #1<br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">// Verify that both global and
+local isolation levels are set to READ COMMITTED.<br>
+mysql&gt; <span style="font-weight: bold;">SELECT
+@@GLOBAL.tx_isolation, @@tx_isolation;</span><br>
++-----------------------------+-----------------------+<br>
+| @@GLOBAL.tx_isolation | @@tx_isolation&nbsp;&nbsp;&nbsp;&nbsp; |<br>
++-----------------------------+-----------------------+<br>
+| <span style="color: rgb(255, 0, 0);">READ-COMMITTED &nbsp;&nbsp; |
+READ-COMMITTED</span> |<br>
++-----------------------------+-----------------------+<br>
+1 row in set (0.00 sec)<br>
+      <br>
+// Change the database to work with the person table.<br>
+mysql&gt; <span style="font-weight: bold;">USE mydb;</span><br>
+Database changed<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+7. Check that now the local isolation level is set to READ COMMITTED in
+client #2<br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">// Verify that both global and
+local isolation levels are set to READ COMMITTED.<br>
+mysql&gt; <span style="font-weight: bold;">SELECT
+@@GLOBAL.tx_isolation, @@tx_isolation;</span><br>
++-----------------------------+-----------------------+<br>
+| @@GLOBAL.tx_isolation | @@tx_isolation&nbsp;&nbsp;&nbsp;&nbsp; |<br>
++-----------------------------+-----------------------+<br>
+| <span style="color: rgb(255, 0, 0);">READ-COMMITTED &nbsp;&nbsp; |
+READ-COMMITTED</span> |<br>
++-----------------------------+-----------------------+<br>
+1 row in set (0.00 sec)<br>
+      <br>
+// Change the database to work with the person table.<br>
+mysql&gt; <span style="font-weight: bold;">USE mydb;</span><br>
+Database changed<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+8. In client #1, start a transaction.<br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">mysql&gt; <span style="font-weight: bold; color: rgb(0, 0, 0);">START TRANSACTION;</span><br>
+Query OK, 0 rows affected (0.00 sec)<br>
+      <br>
+mysql&gt; <span style="font-weight: bold;">SELECT * FROM person;</span><br>
++-----------+------------+-----------+-----+<br>
+| person_id | first_name | last_name | age |<br>
++-----------+------------+-----------+-----+<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1 |
+sang&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |
+shin&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp; 88 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2 |
+kelly&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | jones&nbsp;&nbsp;&nbsp;&nbsp;
+|&nbsp; 22 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3 |
+jack&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | kennedy&nbsp;&nbsp; |&nbsp;
+56 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4 |
+paul&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | kennedy&nbsp;&nbsp; |&nbsp;
+34 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 5 |
+daniel&nbsp;&nbsp;&nbsp;&nbsp; | song&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+|&nbsp; 24 |<br>
++-----------+------------+-----------+-----+<br>
+5 rows in set (0.00 sec)</td>
+    </tr>
+  </tbody>
+</table>
+<br>
+9. In client #2, start a transaction<br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">mysql&gt; <span style="font-weight: bold; color: rgb(0, 0, 0);">START TRANSACTION;</span><br>
+Query OK, 0 rows affected (0.00 sec)<br>
+      <br>
+mysql&gt; <span style="font-weight: bold;">SELECT * FROM person;</span><br>
++-----------+------------+-----------+-----+<br>
+| person_id | first_name | last_name | age |<br>
++-----------+------------+-----------+-----+<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1 |
+sang&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |
+shin&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp; 88 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2 |
+kelly&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | jones&nbsp;&nbsp;&nbsp;&nbsp;
+|&nbsp; 22 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3 |
+jack&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | kennedy&nbsp;&nbsp; |&nbsp;
+56 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4 |
+paul&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | kennedy&nbsp;&nbsp; |&nbsp;
+34 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 5 |
+daniel&nbsp;&nbsp;&nbsp;&nbsp; | song&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+|&nbsp; 24 |<br>
++-----------+------------+-----------+-----+<br>
+5 rows in set (0.00 sec)</td>
+    </tr>
+  </tbody>
+</table>
+<br>
+10. In client #1, insert a new record.<br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">// Insert a new record in client
+under transaction.<br>
+mysql&gt; <span style="font-weight: bold;">INSERT INTO person
+(person_id, first_name, last_name, age)</span><br>
+&nbsp;&nbsp;&nbsp; -&gt; <span style="font-weight: bold;">VALUES</span><br>
+&nbsp;&nbsp;&nbsp; -&gt; <span style="font-weight: bold;">(41, 'tom',
+'jones', 43);</span><br>
+Query OK, 1 row affected (0.00 sec)<br>
+      <br>
+// Client #1 sees the change he made.<br>
+mysql&gt; <span style="font-weight: bold;">SELECT * FROM person;</span><br>
++-----------+------------+-----------+-----+<br>
+| person_id | first_name | last_name | age |<br>
++-----------+------------+-----------+-----+<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1 |
+sang&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |
+shin&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp; 88 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2 |
+kelly&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | jones&nbsp;&nbsp;&nbsp;&nbsp;
+|&nbsp; 22 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3 |
+jack&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | kennedy&nbsp;&nbsp; |&nbsp;
+56 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4 |
+paul&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | kennedy&nbsp;&nbsp; |&nbsp;
+34 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 5 |
+daniel&nbsp;&nbsp;&nbsp;&nbsp; | song&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+|&nbsp; 24 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 41 |
+tom&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |
+jones&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp; 43 |<br>
++-----------+------------+-----------+-----+<br>
+6 rows in set (0.00 sec)</td>
+    </tr>
+  </tbody>
+</table>
+<br>
+11. In client #2, observe that it does not see the newly added record
+by
+client #1.<br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">mysql&gt; SELECT * FROM person;<br>
++-----------+------------+-----------+-----+<br>
+| person_id | first_name | last_name | age |<br>
++-----------+------------+-----------+-----+<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1 |
+sang&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |
+shin&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp; 88 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2 |
+kelly&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | jones&nbsp;&nbsp;&nbsp;&nbsp;
+|&nbsp; 22 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3 |
+jack&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | kennedy&nbsp;&nbsp; |&nbsp;
+56 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4 |
+paul&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | kennedy&nbsp;&nbsp; |&nbsp;
+34 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 5 |
+daniel&nbsp;&nbsp;&nbsp;&nbsp; | song&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+|&nbsp; 24 |<br>
++-----------+------------+-----------+-----+<br>
+5 rows in set (0.00 sec)<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+12. In client #1, do COMMIT.<br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">mysql&gt; <span style="font-weight: bold;">COMMIT;</span><br>
+Query OK, 0 rows affected (0.05 sec)<br>
+      <br>
+mysql&gt; SELECT * FROM person;<br>
++-----------+------------+-----------+-----+<br>
+| person_id | first_name | last_name | age |<br>
++-----------+------------+-----------+-----+<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1 |
+sang&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |
+shin&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp; 88 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2 |
+kelly&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | jones&nbsp;&nbsp;&nbsp;&nbsp;
+|&nbsp; 22 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3 |
+jack&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | kennedy&nbsp;&nbsp; |&nbsp;
+56 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4 |
+paul&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | kennedy&nbsp;&nbsp; |&nbsp;
+34 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 5 |
+daniel&nbsp;&nbsp;&nbsp;&nbsp; | song&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+|&nbsp; 24 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 41 |
+tom&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |
+jones&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp; 43 |<br>
++-----------+------------+-----------+-----+<br>
+6 rows in set (0.00 sec)<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+13. In client #2, observe that the newly added record by client #1 is
+now visible.&nbsp; In <span style="font-weight: bold;">READ COMMITTED</span>
+isolation level, client #2 sees two different results within a single
+transaction.<br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">mysql&gt; <span style="font-weight: bold;">SELECT * FROM person;</span><br>
++-----------+------------+-----------+-----+<br>
+| person_id | first_name | last_name | age |<br>
++-----------+------------+-----------+-----+<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1 |
+sang&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |
+shin&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp; 88 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2 |
+kelly&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | jones&nbsp;&nbsp;&nbsp;&nbsp;
+|&nbsp; 22 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3 |
+jack&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | kennedy&nbsp;&nbsp; |&nbsp;
+56 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4 |
+paul&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | kennedy&nbsp;&nbsp; |&nbsp;
+34 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 5 |
+daniel&nbsp;&nbsp;&nbsp;&nbsp; | song&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+|&nbsp; 24 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: rgb(255, 0, 0);">&nbsp; 41 |
+tom&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |
+jones&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp; 43 |</span><br>
++-----------+------------+-----------+-----+<br>
+6 rows in set (0.00 sec)<br>
+      <br>
+mysql&gt; <span style="font-weight: bold;">COMMIT;</span><br>
+Query OK, 0 rows affected (0.00 sec)<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+</div>
+<br>
+<div style="margin-left: 40px;">&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; <a href="index.html#Exercise_5">return to top of exercise</a></div>
+<br>
+<h3 style="margin-left: 40px;" class="tutorial"><a name="5.3"></a>(5.3)&nbsp;
+REPEATABLE
+READ Isolation level</h3>
+<br>
+<div style="margin-left: 40px;">
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">Client #1:&nbsp; Start
+Transaction----INSERT a record&nbsp;
+A------------COMMIT-----------------------------------------&gt;<br>
+Client #2:&nbsp; Start Transaction----------------<span style="color: rgb(255, 0, 0);">(Not see Record
+A)---------------COMMIT--(See
+Record A)&nbsp;</span> ----&gt;</td>
+    </tr>
+  </tbody>
+</table>
+<br>
+</div>
+<div style="margin-left: 40px;">0. Start with fresh data in client #0.<br>
+</div>
+<div style="margin-left: 40px;"><br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">mysql&gt; <span style="font-weight: bold;">SOURCE sqlscripts/person_data.sql</span><br>
+Database changed<br>
+Query OK, 0 rows affected (0.10 sec)<br>
+      <br>
+Query OK, 0 rows affected (0.08 sec)<br>
+      <br>
+Query OK, 5 rows affected (0.03 sec)<br>
+Records: 5&nbsp; Duplicates: 0&nbsp; Warnings: 0<br>
+      <br>
+mysql&gt; <span style="font-weight: bold;">SELECT * FROM person;</span><br>
++-----------+------------+-----------+-----+<br>
+| person_id | first_name | last_name | age |<br>
++-----------+------------+-----------+-----+<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1 |
+sang&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |
+shin&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp; 88 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2 |
+kelly&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | jones&nbsp;&nbsp;&nbsp;&nbsp;
+|&nbsp; 22 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3 |
+jack&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | kennedy&nbsp;&nbsp; |&nbsp;
+56 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4 |
+paul&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | kennedy&nbsp;&nbsp; |&nbsp;
+34 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 5 |
+daniel&nbsp;&nbsp;&nbsp;&nbsp; | song&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+|&nbsp; 24 |<br>
++-----------+------------+-----------+-----+<br>
+5 rows in set (0.00 sec)<br>
+      <br>
+mysql&gt; <span style="font-weight: bold;">SELECT COUNT(person_id)
+from person;</span><br>
++------------------+<br>
+| COUNT(person_id) |<br>
++------------------+<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+5 |<br>
++------------------+<br>
+1 row in set (0.00 sec)</td>
+    </tr>
+  </tbody>
+</table>
+<br>
+1. Set the global transaction isolation level to REPEATABLE READ in
+client #0.<br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">mysql&gt; <span style="font-weight: bold;">SET GLOBAL TRANSACTION ISOLATION LEVEL
+REPEATABLE READ;</span><br>
+Query OK, 0 rows affected (0.00 sec)<br>
+      <br>
+// Verify that both global and local isolation levels are set to
+REPEATABLE READ.<br>
+mysql&gt; <span style="font-weight: bold;">SELECT
+@@GLOBAL.tx_isolation, @@tx_isolation;</span><br>
++-----------------------------+-----------------------+<br>
+| @@GLOBAL.tx_isolation | @@tx_isolation&nbsp;&nbsp;&nbsp;&nbsp; |<br>
++-----------------------------+-----------------------+<br>
+| <span style="color: rgb(255, 0, 0);">REPEATABLE-READ &nbsp;&nbsp; |
+REPEATABLE-READ</span> |<br>
++-----------------------------+-----------------------+<br>
+1 row in set (0.00 sec)<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+2. Exit client #1, relaunch it, check the isolation levels, choose the
+database, and start a transaction in it.<br>
+<p>At the mysql prompt, type exit to close the client #1.</p>
+<p>In the same Terminal or console, depending on your system, issue: <span style="font-weight: bold;">mysql -u root -p</span><br>
+Enter the password for MySQL root user when prompted.</p>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">// Verify that both global and
+local isolation levels are set to REPEATABLE READ.<br>
+mysql&gt; <span style="font-weight: bold;">SELECT
+@@GLOBAL.tx_isolation, @@tx_isolation;</span><br>
++-----------------------------+-----------------------+<br>
+| @@GLOBAL.tx_isolation | @@tx_isolation&nbsp;&nbsp;&nbsp;&nbsp; |<br>
++-----------------------------+-----------------------+<br>
+| <span style="color: rgb(255, 0, 0);">REPEATABLE-READ &nbsp;&nbsp; |
+REPEATABLE-READ</span> |<br>
++-----------------------------+-----------------------+<br>
+1 row in set (0.00 sec)<br>
+      <br>
+// Change the database to work with the person table.<br>
+mysql&gt; <span style="font-weight: bold;">USE mydb;</span><br>
+Database changed<br>
+      <br>
+mysql&gt; <span style="font-weight: bold; color: rgb(255, 0, 0);">START
+TRANSACTION;</span><br>
+Query OK, 0 rows affected (0.00 sec)<br>
+      <br>
+mysql&gt; <span style="font-weight: bold;">SELECT * FROM person;</span><br>
++-----------+------------+-----------+-----+<br>
+| person_id | first_name | last_name | age |<br>
++-----------+------------+-----------+-----+<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1 |
+sang&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |
+shin&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp; 88 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2 |
+kelly&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | jones&nbsp;&nbsp;&nbsp;&nbsp;
+|&nbsp; 22 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3 |
+jack&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | kennedy&nbsp;&nbsp; |&nbsp;
+56 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4 |
+paul&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | kennedy&nbsp;&nbsp; |&nbsp;
+34 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 5 |
+daniel&nbsp;&nbsp;&nbsp;&nbsp; | song&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+|&nbsp; 24 |<br>
++-----------+------------+-----------+-----+<br>
+5 rows in set (0.00 sec)</td>
+    </tr>
+  </tbody>
+</table>
+<br>
+3. Exit client #2, relaunch it, check the isolation levels, choose the
+database, and start a transaction in it.<br>
+<p>At the mysql prompt, type exit to close the client #2.</p>
+<p>In the same Terminal or console, depending on your system, issue: <span style="font-weight: bold;">mysql -u root -p</span><br>
+Enter the password for MySQL root user when prompted.</p>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">// Verify that both global and
+local isolation levels are set to REPEATABLE READ.<br>
+mysql&gt; <span style="font-weight: bold;">SELECT
+@@GLOBAL.tx_isolation, @@tx_isolation;</span><br>
++-----------------------------+-----------------------+<br>
+| @@GLOBAL.tx_isolation | @@tx_isolation&nbsp;&nbsp;&nbsp;&nbsp; |<br>
++-----------------------------+-----------------------+<br>
+| <span style="color: rgb(255, 0, 0);">REPEATABLE-READ &nbsp;&nbsp; |
+REPEATABLE-READ</span> |<br>
++-----------------------------+-----------------------+<br>
+1 row in set (0.00 sec)<br>
+      <br>
+// Change the database to work with the person table.<br>
+mysql&gt; <span style="font-weight: bold;">USE mydb;</span><br>
+Database changed<br>
+      <br>
+mysql&gt; <span style="font-weight: bold; color: rgb(255, 0, 0);">START
+TRANSACTION;</span><br>
+Query OK, 0 rows affected (0.00 sec)<br>
+      <br>
+mysql&gt; <span style="font-weight: bold;">SELECT * FROM person;</span><br>
++-----------+------------+-----------+-----+<br>
+| person_id | first_name | last_name | age |<br>
++-----------+------------+-----------+-----+<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1 |
+sang&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |
+shin&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp; 88 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2 |
+kelly&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | jones&nbsp;&nbsp;&nbsp;&nbsp;
+|&nbsp; 22 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3 |
+jack&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | kennedy&nbsp;&nbsp; |&nbsp;
+56 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4 |
+paul&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | kennedy&nbsp;&nbsp; |&nbsp;
+34 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 5 |
+daniel&nbsp;&nbsp;&nbsp;&nbsp; | song&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+|&nbsp; 24 |<br>
++-----------+------------+-----------+-----+<br>
+5 rows in set (0.00 sec)</td>
+    </tr>
+  </tbody>
+</table>
+<br>
+4. In client #1, insert a new record.<br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">mysql&gt; <span style="font-weight: bold;">INSERT INTO person
+(person_id, first_name, last_name, age)</span><br>
+&nbsp;&nbsp;&nbsp; -&gt; <span style="font-weight: bold;">VALUES</span><br>
+&nbsp;&nbsp;&nbsp; -&gt; <span style="font-weight: bold;">(41, 'tom',
+'jones', 43);</span><br>
+Query OK, 1 row affected (0.00 sec)<br>
+      <br>
+mysql&gt; <span style="font-weight: bold;">SELECT * FROM person;</span><br>
++-----------+------------+-----------+-----+<br>
+| person_id | first_name | last_name | age |<br>
++-----------+------------+-----------+-----+<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1 |
+sang&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |
+shin&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp; 88 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2 |
+kelly&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | jones&nbsp;&nbsp;&nbsp;&nbsp;
+|&nbsp; 22 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3 |
+jack&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | kennedy&nbsp;&nbsp; |&nbsp;
+56 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4 |
+paul&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | kennedy&nbsp;&nbsp; |&nbsp;
+34 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 5 |
+daniel&nbsp;&nbsp;&nbsp;&nbsp; | song&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+|&nbsp; 24 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 41 |
+tom&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |
+jones&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp; 43 |<br>
++-----------+------------+-----------+-----+<br>
+6 rows in set (0.00 sec)<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+5. In client #2, observe that the it does not see the newly added
+record by client #1.<br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">mysql&gt; <span style="font-weight: bold;">SELECT * FROM person;</span><br>
++-----------+------------+-----------+-----+<br>
+| person_id | first_name | last_name | age |<br>
++-----------+------------+-----------+-----+<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1 |
+sang&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |
+shin&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp; 88 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2 |
+kelly&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | jones&nbsp;&nbsp;&nbsp;&nbsp;
+|&nbsp; 22 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3 |
+jack&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | kennedy&nbsp;&nbsp; |&nbsp;
+56 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4 |
+paul&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | kennedy&nbsp;&nbsp; |&nbsp;
+34 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 5 |
+daniel&nbsp;&nbsp;&nbsp;&nbsp; | song&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+|&nbsp; 24 |<br>
++-----------+------------+-----------+-----+<br>
+5 rows in set (0.00 sec)<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+6. In client #1, COMMIT.<br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">mysql&gt; <span style="font-weight: bold; color: rgb(255, 0, 0);">COMMIT;</span><br>
+Query OK, 0 rows affected (0.04 sec)<br>
+      <br>
+mysql&gt; <span style="font-weight: bold;">SELECT * FROM person;</span><br>
++-----------+------------+-----------+-----+<br>
+| person_id | first_name | last_name | age |<br>
++-----------+------------+-----------+-----+<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1 |
+sang&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |
+shin&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp; 88 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2 |
+kelly&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | jones&nbsp;&nbsp;&nbsp;&nbsp;
+|&nbsp; 22 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3 |
+jack&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | kennedy&nbsp;&nbsp; |&nbsp;
+56 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4 |
+paul&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | kennedy&nbsp;&nbsp; |&nbsp;
+34 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 5 |
+daniel&nbsp;&nbsp;&nbsp;&nbsp; | song&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+|&nbsp; 24 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="font-weight: bold;">41 |
+tom&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |
+jones&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp; 43 |</span><br>
++-----------+------------+-----------+-----+<br>
+6 rows in set (0.00 sec)<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+7. In client #2, the client 2
+does not see the change made by client&nbsp; #1 until its own COMMIT.<br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">mysql&gt; <span style="font-weight: bold;">SELECT * FROM person;</span><br>
++-----------+------------+-----------+-----+<br>
+| person_id | first_name | last_name | age |<br>
++-----------+------------+-----------+-----+<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1 |
+sang&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |
+shin&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp; 88 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2 |
+kelly&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | jones&nbsp;&nbsp;&nbsp;&nbsp;
+|&nbsp; 22 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3 |
+jack&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | kennedy&nbsp;&nbsp; |&nbsp;
+56 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4 |
+paul&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | kennedy&nbsp;&nbsp; |&nbsp;
+34 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 5 |
+daniel&nbsp;&nbsp;&nbsp;&nbsp; | song&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+|&nbsp; 24 |<br>
++-----------+------------+-----------+-----+<br>
+5 rows in set (0.00 sec)<br>
+      <br>
+// After COMMIT, the client #2 see the change made by client #1<br>
+mysql&gt; <span style="font-weight: bold; color: rgb(255, 0, 0);">COMMIT;</span><br>
+Query OK, 0 rows affected (0.00 sec)<br>
+      <br>
+mysql&gt; <span style="font-weight: bold;">SELECT * FROM person;</span><br>
++-----------+------------+-----------+-----+<br>
+| person_id | first_name | last_name | age |<br>
++-----------+------------+-----------+-----+<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1 |
+sang&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |
+shin&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp; 88 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2 |
+kelly&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | jones&nbsp;&nbsp;&nbsp;&nbsp;
+|&nbsp; 22 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3 |
+jack&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | kennedy&nbsp;&nbsp; |&nbsp;
+56 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4 |
+paul&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | kennedy&nbsp;&nbsp; |&nbsp;
+34 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 5 |
+daniel&nbsp;&nbsp;&nbsp;&nbsp; | song&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+|&nbsp; 24 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 41 |
+tom&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |
+jones&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp; 43 |<br>
++-----------+------------+-----------+-----+<br>
+6 rows in set (0.00 sec)<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<p>Notice the difference in behavior comparing to what happened in
+Exercise 1 when a client used a transaction and the other did not, and
+when both clients use transactions. In the former case, the commit is
+seen in the second client as soon as the first client commits. In the
+latter case, the second client must commit to see the changes made by
+the first client.</p>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; <a href="index.html#Exercise_5">return to top of exercise</a><br>
+<br>
+</div>
+<br>
+<h3 style="margin-left: 40px;" class="tutorial"><a name="5.4"></a>(5.4)&nbsp;
+SERIALIZABLE isolation level<br>
+</h3>
+<br>
+<div style="margin-left: 40px;"><br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">Client #1:&nbsp; Start
+Transaction----INSERT a record&nbsp;
+A----------------------COMMIT-----------------------------------------&gt;<br>
+Client #2:&nbsp; Start Transaction----------------------------<span style="color: rgb(255, 0, 0);">(SELECT Blocked)</span>-----------
+(SELECT returns)--COMMIT----&gt;</td>
+    </tr>
+  </tbody>
+</table>
+<br>
+0. Start with fresh data in client #0.<br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">mysql&gt; <span style="font-weight: bold;">SOURCE sqlscripts/person_data.sql</span><br>
+Database changed<br>
+Query OK, 0 rows affected (0.10 sec)<br>
+      <br>
+Query OK, 0 rows affected (0.08 sec)<br>
+      <br>
+Query OK, 5 rows affected (0.03 sec)<br>
+Records: 5&nbsp; Duplicates: 0&nbsp; Warnings: 0<br>
+      <br>
+mysql&gt; <span style="font-weight: bold;">SELECT * FROM person;</span><br>
++-----------+------------+-----------+-----+<br>
+| person_id | first_name | last_name | age |<br>
++-----------+------------+-----------+-----+<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1 |
+sang&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |
+shin&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp; 88 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2 |
+kelly&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | jones&nbsp;&nbsp;&nbsp;&nbsp;
+|&nbsp; 22 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3 |
+jack&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | kennedy&nbsp;&nbsp; |&nbsp;
+56 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4 |
+paul&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | kennedy&nbsp;&nbsp; |&nbsp;
+34 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 5 |
+daniel&nbsp;&nbsp;&nbsp;&nbsp; | song&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+|&nbsp; 24 |<br>
++-----------+------------+-----------+-----+<br>
+5 rows in set (0.00 sec)<br>
+      <br>
+mysql&gt; <span style="font-weight: bold;">SELECT COUNT(person_id)
+from person;</span><br>
++------------------+<br>
+| COUNT(person_id) |<br>
++------------------+<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+5 |<br>
++------------------+<br>
+1 row in set (0.00 sec)</td>
+    </tr>
+  </tbody>
+</table>
+<br>
+</div>
+<div style="margin-left: 40px;">1. Set the global transaction isolation
+level to SERIALIZABLE in client #0.<br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">mysql&gt; <span style="font-weight: bold;">SET GLOBAL TRANSACTION ISOLATION LEVEL
+SERIALIZABLE;</span><br>
+Query OK, 0 rows affected (0.00 sec)<br>
+      <br>
+// Verify that the global isolation level is set to SERIALIZABLE,<br>
+// but that the local isolation level is still set to REPEATABLE READ.<br>
+mysql&gt; <span style="font-weight: bold;">SELECT
+@@GLOBAL.tx_isolation, @@tx_isolation;</span><br>
++-----------------------------+-----------------------+<br>
+| @@GLOBAL.tx_isolation | @@tx_isolation&nbsp;&nbsp;&nbsp;&nbsp; |<br>
++-----------------------------+-----------------------+<br>
+| <span style="color: rgb(255, 0, 0);">SERIALIZABLE &nbsp;&nbsp; |
+REPEATABLE-READ</span> |<br>
++-----------------------------+-----------------------+<br>
+1 row in set (0.00 sec)<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+2. Exit client #1, relaunch it, check the isolation levels, choose the
+database, and start a transaction in it.<br>
+<p>At the mysql prompt, type exit to close the client #1.</p>
+<p>In the same Terminal or console, depending on your system, issue: <span style="font-weight: bold;">mysql -u root -p</span><br>
+Enter the password for MySQL root user when prompted.</p>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">// Verify that both global and
+local isolation levels are set to SERIALIZABLE.<br>
+mysql&gt; <span style="font-weight: bold;">SELECT
+@@GLOBAL.tx_isolation, @@tx_isolation;</span><br>
++-----------------------------+-----------------------+<br>
+| @@GLOBAL.tx_isolation | @@tx_isolation&nbsp;&nbsp;&nbsp;&nbsp; |<br>
++-----------------------------+-----------------------+<br>
+| <span style="color: rgb(255, 0, 0);">SERIALIZABLE &nbsp;&nbsp; |
+SERIALIZABLE</span> |<br>
++-----------------------------+-----------------------+<br>
+1 row in set (0.00 sec)<br>
+      <br>
+// Change the database to work with the person table.<br>
+mysql&gt; <span style="font-weight: bold;">USE mydb;</span><br>
+Database changed<br>
+      <br>
+mysql&gt; <span style="font-weight: bold; color: rgb(255, 0, 0);">START
+TRANSACTION;</span><br>
+Query OK, 0 rows affected (0.00 sec)<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+3. Exit client #2, relaunch it, check the isolation levels, choose the
+database, and start a transaction in it.<br>
+<p>At the mysql prompt, type exit to close the client #2.</p>
+<p>In the same Terminal or console, depending on your system, issue: <span style="font-weight: bold;">mysql -u root -p</span><br>
+Enter the password for MySQL root user when prompted.</p>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">// Verify that both global and
+local isolation levels are set to SERIALIZABLE.<br>
+mysql&gt; <span style="font-weight: bold;">SELECT
+@@GLOBAL.tx_isolation, @@tx_isolation;</span><br>
++-----------------------------+-----------------------+<br>
+| @@GLOBAL.tx_isolation | @@tx_isolation&nbsp;&nbsp;&nbsp;&nbsp; |<br>
++-----------------------------+-----------------------+<br>
+| <span style="color: rgb(255, 0, 0);">SERIALIZABLE &nbsp;&nbsp; |
+SERIALIZABLE</span> |<br>
++-----------------------------+-----------------------+<br>
+1 row in set (0.00 sec)<br>
+      <br>
+// Change the database to work with the person table.<br>
+mysql&gt; <span style="font-weight: bold;">USE mydb;</span><br>
+Database changed<br>
+      <br>
+mysql&gt; <span style="font-weight: bold; color: rgb(255, 0, 0);">START
+TRANSACTION;</span><br>
+Query OK, 0 rows affected (0.00 sec)<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+4. In client #1, insert a new record.<br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">mysql&gt; <span style="font-weight: bold;">INSERT INTO person
+(person_id, first_name, last_name, age)</span><br>
+&nbsp;&nbsp;&nbsp; -&gt; <span style="font-weight: bold;">VALUES</span><br>
+&nbsp;&nbsp;&nbsp; -&gt; <span style="font-weight: bold;">(41, 'tom',
+'jones', 43);</span><br>
+Query OK, 1 row affected (0.00 sec)<br>
+      <br>
+mysql&gt; <span style="font-weight: bold;">SELECT * FROM person;</span><br>
++-----------+------------+-----------+-----+<br>
+| person_id | first_name | last_name | age |<br>
++-----------+------------+-----------+-----+<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1 |
+sang&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |
+shin&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp; 88 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2 |
+kelly&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | jones&nbsp;&nbsp;&nbsp;&nbsp;
+|&nbsp; 22 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3 |
+jack&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | kennedy&nbsp;&nbsp; |&nbsp;
+56 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4 |
+paul&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | kennedy&nbsp;&nbsp; |&nbsp;
+34 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 5 |
+daniel&nbsp;&nbsp;&nbsp;&nbsp; | song&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+|&nbsp; 24 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 41 |
+tom&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |
+jones&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp; 43 |<br>
++-----------+------------+-----------+-----+<br>
+6 rows in set (0.00 sec)</td>
+    </tr>
+  </tbody>
+</table>
+<br>
+5. In client #2, observe that any attempt to view the person table
+contents is blocked.<br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">mysql&gt; <span style="font-weight: bold;">SELECT * FROM person;</span><br>
+// Wait a bit till the time-out is exceeded<br>
+ERROR 1205 (HY000): Lock wait timeout exceeded; try restarting
+transaction<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+6. In client #1, COMMIT.<br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">mysql&gt; <span style="font-weight: bold;">COMMIT;</span><br>
+Query OK, 0 rows affected (0.04 sec)<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+7. In client #2, observe that the blocked SELECT is now finished.<br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">mysql&gt; <span style="font-weight: bold;">SELECT * FROM person;</span><br>
++-----------+------------+-----------+-----+<br>
+| person_id | first_name | last_name | age |<br>
++-----------+------------+-----------+-----+<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1 |
+sang&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |
+shin&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp; 88 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2 |
+kelly&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | jones&nbsp;&nbsp;&nbsp;&nbsp;
+|&nbsp; 22 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3 |
+jack&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | kennedy&nbsp;&nbsp; |&nbsp;
+56 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4 |
+paul&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | kennedy&nbsp;&nbsp; |&nbsp;
+34 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 5 |
+daniel&nbsp;&nbsp;&nbsp;&nbsp; | song&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+|&nbsp; 24 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 41 |
+tom&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |
+jones&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp; 43 |<br>
++-----------+------------+-----------+-----+<br>
+6 rows in set (41.63 sec)<br>
+      <br>
+mysql&gt; <span style="font-weight: bold;">COMMIT;</span><br>
+Query OK, 0 rows affected (0.00 sec)<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<br>
+</div>
+<div style="margin-left: 40px;">
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; <a href="index.html#Exercise_5">return to top of exercise</a><br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; <a href="#Tutorial_Exercises">return to top</a><br>
+
+<br>
+</div>
+<br>
+<h2><a name="Exercise_6"></a>Exercise 6:&nbsp; Table Locks<br>
+</h2>
+<p class="pBody" style="margin-left: 40px;">Locks may be used to
+emulate transactions or to get more speed when updating tables. <br>
+</p>
+<div style="margin-left: 40px;">
+<ol start="0">
+  <li><a href="#6.0">Create test table</a></li>
+  <li><a href="#6.1">READ lock</a></li>
+  <li><a href="#6.2">WRITE lock</a></li>
+</ol>
+<br>
+</div>
+<h3 style="margin-left: 40px;" class="tutorial"><a name="6.0"></a>(6.0)&nbsp;
+Create test table<br>
+</h3>
+<br>
+<div style="margin-left: 40px;">
+1. Study the SQL script<br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">/* Set the default (current)
+database */<br>
+USE mydb;<br>
+/* Drop 'person_myisam' table */<br>
+DROP TABLE IF EXISTS person_myisam;<br>
+      <br>
+/* Create and populate 'person_myisam" table */<br>
+CREATE TABLE person_myisam (<br>
+person_id SMALLINT UNSIGNED NOT NULL,<br>
+first_name VARCHAR(45) NOT NULL,<br>
+last_name VARCHAR(45) NOT NULL,<br>
+age smallint(3) unsigned not null,<br>
+PRIMARY KEY&nbsp; (person_id)<br>
+) <span style="font-weight: bold;">ENGINE=MYISAM;</span><br>
+      <br>
+INSERT INTO person_myisam (person_id, first_name, last_name, age)<br>
+VALUES<br>
+(1, 'sang', 'shin', 88),<br>
+(2, 'kelly', 'jones', 22),<br>
+(3, 'jack', 'kennedy', 56),<br>
+(4, 'paul', 'kennedy', 34),<br>
+(5, 'daniel', 'song', 24);<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+</div>
+<div style="margin-left: 40px;">
+2. Execute the SQL script in client #0<br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">mysql&gt; <span style="font-weight: bold;">SOURCE sqlscripts/person_data_myisam.sql</span><br>
+Database changed<br>
+Query OK, 0 rows affected (0.07 sec)<br>
+      <br>
+Query OK, 0 rows affected (0.05 sec)<br>
+      <br>
+Query OK, 5 rows affected (0.00 sec)<br>
+Records: 5&nbsp; Duplicates: 0&nbsp; Warnings: 0<br>
+      <br>
+mysql&gt; <span style="font-weight: bold;">SELECT * FROM person_myisam;</span><br>
++-----------+------------+-----------+-----+<br>
+| person_id | first_name | last_name | age |<br>
++-----------+------------+-----------+-----+<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1 |
+sang&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |
+shin&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp; 88 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2 |
+kelly&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | jones&nbsp;&nbsp;&nbsp;&nbsp;
+|&nbsp; 22 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3 |
+jack&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | kennedy&nbsp;&nbsp; |&nbsp;
+56 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4 |
+paul&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | kennedy&nbsp;&nbsp; |&nbsp;
+34 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 5 |
+daniel&nbsp;&nbsp;&nbsp;&nbsp; | song&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+|&nbsp; 24 |<br>
++-----------+------------+-----------+-----+<br>
+5 rows in set (0.00 sec)<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+</div>
+<div style="margin-left: 40px;">&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; <a href="index.html#Exercise_6">return to top of exercise</a></div>
+<div style="margin-left: 40px;"><br>
+</div>
+<h3 style="margin-left: 40px;" class="tutorial"><a name="6.1"></a>(6.1)&nbsp;
+READ lock</h3>
+<div style="margin-left: 40px;"><br>
+0. Study LOCK statement.<br>
+</div>
+<br>
+<div style="margin-left: 40px;">
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">mysql&gt;<span style="font-weight: bold;"> help LOCK;</span><br>
+Name: 'LOCK'<br>
+Description:<br>
+Syntax:<br>
+LOCK TABLES<br>
+&nbsp;&nbsp;&nbsp; tbl_name [[AS] alias] lock_type<br>
+&nbsp;&nbsp;&nbsp; [, tbl_name [[AS] alias] lock_type] ...<br>
+      <br>
+lock_type:<br>
+&nbsp;&nbsp;&nbsp; READ [LOCAL]<br>
+&nbsp; | [LOW_PRIORITY] WRITE<br>
+      <br>
+UNLOCK TABLES<br>
+      <br>
+MySQL enables client sessions to acquire table locks explicitly for the<br>
+purpose of cooperating with other sessions for access to tables, or to<br>
+prevent other sessions from modifying tables during periods when a<br>
+session requires exclusive access to them. A session can acquire or<br>
+release locks only for itself. One session cannot acquire locks for<br>
+another session or release locks held by another session.<br>
+      <br>
+Locks may be used to emulate transactions or to get more speed when<br>
+updating tables. This is explained in more detail later in this<br>
+section.<br>
+      <br>
+LOCK TABLES explicitly acquires table locks for the current client<br>
+session. Table locks can be acquired for base tables or views. You must<br>
+have the LOCK TABLES privilege, and the SELECT privilege for each<br>
+object to be locked.<br>
+      <br>
+For view locking, LOCK TABLES adds all base tables used in the view to<br>
+the set of tables to be locked and locks them automatically. If you<br>
+lock a table explicitly with LOCK TABLES, any tables used in triggers<br>
+are also locked implicitly, as described in<br>
+http://dev.mysql.com/doc/refman/5.1/en/lock-tables-and-triggers.html.<br>
+      <br>
+UNLOCK TABLES explicitly releases any table locks held by the current<br>
+session.<br>
+      <br>
+Another use for UNLOCK TABLES is to release the global read lock<br>
+acquired with the FLUSH TABLES WITH READ LOCK statement, which enables<br>
+you to lock all tables in all databases. See [HELP FLUSH]. (This is a<br>
+very convenient way to get backups if you have a file system such as<br>
+Veritas that can take snapshots in time.)<br>
+      <br>
+URL: http://dev.mysql.com/doc/refman/5.1/en/lock-tables.html</td>
+    </tr>
+  </tbody>
+</table>
+<br>
+</div>
+<div style="margin-left: 40px;">
+1. In client #1, lock the table, try to insert a row, unlock the table.<br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">mysql&gt; <span style="font-weight: bold;">LOCK TABLE person_myisam READ;</span><br>
+Query OK, 0 rows affected (0.00 sec)<br>
+      <br>
+mysql&gt; <span style="font-weight: bold;">INSERT INTO person_myisam
+(person_id, first_name, last_name, age)</span><br>
+&nbsp;&nbsp;&nbsp; -&gt; <span style="font-weight: bold;">VALUES</span><br>
+&nbsp;&nbsp;&nbsp; -&gt;<span style="font-weight: bold;"> (51, 'bill',
+'clinton', 33);</span><br>
+      <span style="color: rgb(255, 0, 0);">ERROR 1099 (HY000): Table
+'person_myisam' was locked with a READ lock and can't be updated<br>
+      <br>
+      <span style="color: rgb(0, 0, 0);">mysql&gt; <span style="font-weight: bold;">UNLOCK TABLES;</span></span><br style="color: rgb(0, 0, 0);">
+      <span style="color: rgb(0, 0, 0);">Query OK, 0 rows affected
+(0.00 sec)</span><br>
+      </span></td>
+    </tr>
+  </tbody>
+</table>
+<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; <a href="index.html#Exercise_6">return to top of exercise</a><br>
+<br>
+</div>
+<h3 style="margin-left: 40px;" class="tutorial"><a name="6.2"></a>(6.2)
+WRITE lock</h3>
+<div style="margin-left: 40px;"><br>
+A WRITE lock on a table means that the client setting the lock can
+modify the data in the table, but the other clients cannot either read
+or write to the table for the duration of the lock.<br>
+<br>
+1. In client #1, lock the table with WRITE lock.<br>
+<br>
+</div>
+<div style="margin-left: 40px;">
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">mysql&gt; <span style="font-weight: bold;">LOCK TABLE person_myisam WRITE;</span><br>
+Query OK, 0 rows affected (0.00 sec)<br>
+      <br>
+// Observe that the client who lock the table with WRITE lock can<br>
+// insert, update, and delete records.<br>
+mysql&gt; <span style="font-weight: bold;">INSERT INTO person_myisam
+(person_id, first_name, last_name, age)</span><br>
+&nbsp;&nbsp;&nbsp; -&gt; <span style="font-weight: bold;">VALUES</span><br>
+&nbsp;&nbsp;&nbsp; -&gt; <span style="font-weight: bold;">(61, 'lady',
+'gaga', 23);</span><br>
+Query OK, 1 row affected (0.00 sec)<br>
+      <br>
+mysql&gt;<span style="font-weight: bold;"> SELECT * FROM person_myisam;</span><br>
++-----------+------------+-----------+-----+<br>
+| person_id | first_name | last_name | age |<br>
++-----------+------------+-----------+-----+<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1 |
+sang&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |
+shin&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp; 88 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2 |
+kelly&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | jones&nbsp;&nbsp;&nbsp;&nbsp;
+|&nbsp; 22 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3 |
+jack&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | kennedy&nbsp;&nbsp; |&nbsp;
+56 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4 |
+paul&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | kennedy&nbsp;&nbsp; |&nbsp;
+34 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 5 |
+daniel&nbsp;&nbsp;&nbsp;&nbsp; | song&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+|&nbsp; 24 |<br>
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 61 |
+lady&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |
+gaga&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp; 23 |<br>
++-----------+------------+-----------+-----+<br>
+6 rows in set (0.00 sec)<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+2. In client #2, observe that an INSERT will be blocked.&nbsp; This is
+because the table is locked with WRITE lock.<br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">mysql&gt; <span style="font-weight: bold;">INSERT INTO person_myisam (person_id,
+first_name, last_name, age)</span><br>
+&nbsp;&nbsp;&nbsp; -&gt; <span style="font-weight: bold;">VALUES</span><br>
+&nbsp;&nbsp;&nbsp; -&gt;<span style="font-weight: bold;"> (71, 'venus',
+'salena', 44);</span><br>
+      <span style="color: rgb(255, 0, 0);">&nbsp;(Blocked)</span><br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+3. In client #1, unlock the table.<br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">mysql&gt; <span style="font-weight: bold;">UNLOCK TABLES;</span><br>
+Query OK, 0 rows affected (0.00 sec)<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+</div>
+<div style="margin-left: 40px;">4. In client #2, observe that the
+INSERT operation returns.<br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">mysql&gt; INSERT INTO
+person_myisam (person_id, first_name, last_name, age)<br>
+&nbsp;&nbsp;&nbsp; -&gt; VALUES<br>
+&nbsp;&nbsp;&nbsp; -&gt; (71, 'venus', 'salena', 44);<br>
+      <span style="color: rgb(255, 0, 0);">Query OK, 1 row affected (1
+min 2.80 sec)</span><br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; <a href="index.html#Exercise_6">return to top of exercise</a><br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; <a href="#Tutorial_Exercises">return to top</a><br>
+
+<br>
+<br>
+<br>
+</div>
+<h2><a name="Homework_Exercise"></a><a name="Homework"></a>Homework
+Exercise<br>
+</h2>
+<br>
+<div style="margin-left: 40px;">
+</div>
+<div style="margin-left: 40px;"><span style="color: rgb(0, 0, 0);">1.
+The homework is to simluate READ COMMITTED Isolation level with the
+following scenario.&nbsp; Capture the screen output of at the Client
+#2's three points (x, y, and z points). </span><span style="color: rgb(0, 0, 0);"></span><br>
+<span style="color: rgb(0, 0, 0);"><br>
+</span>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">Client #1:&nbsp; Start
+Transaction----INSERT a record&nbsp;
+A------INSERT a record B---- UPDATE record A------COMMIT-----------&gt;<br>
+Client #2:&nbsp; Start Transaction------------------------------<span style="color: rgb(255, 0, 0);">x</span>--------------------------<span style="color: rgb(255, 0, 0);">y</span>-------------------------<span style="color: rgb(255, 0, 0);">z</span>------COMMIT--------&gt;</td>
+    </tr>
+  </tbody>
+</table>
+<span style="color: rgb(0, 0, 0);"><br>
+</span><span style="color: rgb(0, 0, 0);"><span style="font-weight: bold;"></span></span>
+2<span style="color: rgb(0, 0, 0);">. Send the following files to</span><span style="color: rgb(0, 0, 0);"> <a href="mailto:mysql-homeworks@jpassion.com">mysql-homeworks@jpassion.com</a>
+with </span><span style="font-weight: bold; color: rgb(0, 0, 0);">Subject
+</span><span style="color: rgb(0, 0, 0);">as </span><span style="font-weight: bold; color: rgb(0, 0, 0);">mysql_transactions.</span><br>
+<ul style="color: rgb(0, 0, 0);">
+  <li>Captured output screen&nbsp;<span style="font-weight: bold;"> </span>-
+name it as <span style="font-weight: bold;">mysql_transactions.gif</span>
+or <span style="font-weight: bold;">mysql_transactions</span><span style="font-weight: bold;">.jpg</span> (or <span style="font-weight: bold;">mysql_transactions.&lt;whatever
+graphics format&gt;</span>)
+    <ul>
+      <li>Any screen capture that shows that your program is working is
+good enough.&nbsp; </li>
+    </ul>
+  </li>
+</ul>
+<span style="font-weight: bold;"></span></div>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;"></div>
+</div>
+<div style="margin-left: 40px;"><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;
+
+
+ &nbsp; &nbsp; &nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;
+
+
+ <a href="#Tutorial_Exercises">return
+to the top</a></div>
+<div class="indent"><br>
+<br>
+<br>
+</div>
+<br>
+<p> </p>
+<!-- ======================================================================================== -->
+
+
+</body></html>
