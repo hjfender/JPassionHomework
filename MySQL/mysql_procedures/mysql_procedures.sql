@@ -6,12 +6,23 @@ CREATE PROCEDURE my_stored_procedure(IN length_threshold INT)
 BEGIN
 	DECLARE n VARCHAR(45);
 	
+	DECLARE long_name_table_size INT;
+	DECLARE short_name_table_size INT;
+	
 	DECLARE name_reader CURSOR FOR
-	SELECT last_name FROM mydb.person;
+		SELECT last_name FROM mydb.person;
 	
 	DECLARE EXIT HANDLER FOR 1329
 	BEGIN
-		SELECT long_name.name AS 'Long Names', short_name.name AS 'Short Names' FROM long_name, short_name;
+		SELECT COUNT(*) FROM long_name INTO long_name_table_size;
+		SELECT COUNT(*) FROM short_name INTO short_name_table_size;
+		IF @long_name_table_size > @short_name_table_size THEN
+			SELECT long_name.name AS 'Long Names', short_name.name AS 'Short Names'
+			FROM long_name RIGHT JOIN short_name ON long_name.id = short_name.id;
+		ELSE
+			SELECT long_name.name AS 'Long Names', short_name.name AS 'Short Names'
+			FROM long_name LEFT JOIN short_name ON long_name.id = short_name.id;
+		END IF;
 		SELECT 'Ending procedure' AS Message;
 	END;
 
@@ -20,8 +31,8 @@ BEGIN
 	DROP TABLE IF EXISTS long_name;
 	DROP TABLE IF EXISTS short_name;
 	
-	CREATE TABLE long_name (name VARCHAR(45));
-	CREATE TABLE short_name (name VARCHAR(45));
+	CREATE TABLE long_name (id INT PRIMARY KEY AUTO_INCREMENT, name VARCHAR(45));
+	CREATE TABLE short_name (id INT PRIMARY KEY AUTO_INCREMENT, name VARCHAR(45));
 	
 	OPEN name_reader;
 	
